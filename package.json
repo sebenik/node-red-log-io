@@ -1,5 +1,5 @@
 {
-  "name": "node-red-log-io",
+  "name": "@zigasebenik/node-red-log-io",
   "version": "0.9.0",
   "description": "A Node-RED node to log input and output messages to various outputs.",
   "dependencies": {
@@ -24,12 +24,12 @@
     "nodes"
   ],
   "bugs": {
-    "url": ""
+    "url": "https://github.com/sebenik/node-red-log-io/issues"
   },
-  "homepage": "",
+  "homepage": "https://github.com/sebenik/node-red-log-io",
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "https://github.com/sebenik/node-red-log-io"
   },
   "node-red": {
     "nodes": {

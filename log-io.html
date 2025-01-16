@@ -1,0 +1,345 @@
+<script type="text/javascript">
+  const logIOModes = [
+    { v: 'inline', t: 'Inline' },
+    { v: 'all', t: 'All nodes' },
+    { v: 'flow', t: 'Current flow' },
+    { v: 'select', t: 'Selected nodes' },
+  ];
+
+  function activateAjaxCall(node, active, successCallback) {
+    var url;
+    var body;
+
+    if (Array.isArray(node)) {
+      url = "debug/" + (active ? "enable" : "disable");
+      body = { nodes: node.map(function (n) { return n.id }) }
+      node = node[0];
+    } else {
+      url = "debug/" + node.id + "/" + (active ? "enable" : "disable");
+    }
+    $.ajax({
+      url: url,
+      type: "POST",
+      data: body,
+      success: successCallback,
+      error: function (jqXHR, textStatus, errorThrown) {
+        if (jqXHR.status == 404) {
+          RED.notify('Error: node not deployed', "error");
+        } else if (jqXHR.status === 0) {
+          RED.notify('Error: no response from server', "error");
+        } else {
+          RED.notify(`Error: unexpected error ${jqXHR.status} ${errorThrown}`, "error");
+        }
+      }
+    });
+  }
+
+  RED.nodes.registerType('logIO', {
+    category: 'logging',
+    color: '#C0C0C0',
+    defaults: {
+      name: { value: '_DEFAULT_' },
+      outputs: { value: 1 },
+      active: { value: true },
+      logger: { value: '', type: 'logIO-logger' },
+      complete: { value: 'false', required: true },
+      targetType: { value: undefined },
+      logIOMode: { value: 'inline' },
+      autoStart: { value: true },
+      scope: { value: null, type: '*[]' },
+    },
+    inputs: 1,
+    outputs: 1,
+    label: function() {
+      let mode = logIOModes.find((m) => m.v === this.logIOMode);
+      return this.name || mode?.v || "logIO";
+    },
+    labelStyle: function () {
+      return this.name ? "node_label_italic" : "";
+    },
+    align: 'right',
+    icon: 'debug.svg',
+    button: {
+      toggle: "active",
+      onclick: function () {
+        const node = this;
+        activateAjaxCall(node, node.active, function (resp, textStatus, xhr) {
+          const historyEvent = {
+            t: 'edit',
+            node: node,
+            changes: {
+              active: !node.active
+            },
+            dirty: node.dirty,
+            changed: node.changed,
+            callback: function (ev) {
+              activateAjaxCall(ev.node, ev.node.active);
+            }
+          };
+          node.changed = true;
+          node.dirty = true;
+          RED.nodes.dirty(true);
+          RED.history.push(historyEvent);
+          RED.view.redraw();
+          if (xhr.status == 200) {
+            RED.notify(`Successfully activated ${node.name}`, { type: "success", timeout: 2000 });
+          } else if (xhr.status == 201) {
+            RED.notify(`Successfully deactivated ${node.name}`, { type: "success", timeout: 2000 });
+          }
+        });
+      }
+    },
+
+    onadd: function() {
+      if (this.name === '_DEFAULT_') {
+        this.name = '';
+        RED.actions.invoke("core:generate-node-names", this, { generateHistory: false });
+      }
+    },
+
+    oneditprepare: function() {
+      const node = this;
+
+      $("#node-input-typed-complete").typedInput({
+        default: 'msg',
+        types: ['msg', {
+          value: 'full',
+          label: RED._('node-red:debug.msgobj'),
+          hasValue: false
+        }],
+        typeField: $('#node-input-targetType')
+      });
+
+      if ((this.targetType === "full") || this.complete.toString() === 'true') {
+        $('#node-input-typed-complete').typedInput('type', 'full');
+      } else {
+        const property = (!this.complete || (this.complete === 'false')) ? 'payload' : this.complete.toString();
+        $('#node-input-typed-complete').typedInput('type', 'msg');
+        $('#node-input-typed-complete').typedInput('value', property);
+      }
+      $('#node-input-typed-complete').on('change', () => {
+        if (
+          $('#node-input-typed-complete').typedInput('type') === 'msg' &&
+          $('#node-input-typed-complete').typedInput('value') === ''
+        ) {
+          $('#node-input-typed-complete').typedInput('value', 'payload');
+        }
+      });
+
+      logIOModes.forEach((m) =>
+        $('#node-input-logIOMode').append($("<option></option>").attr("value", m.v).text(m.t))
+      );
+
+      $("#node-input-logIOMode").change(function () {
+        switch (this.value) {
+          case "inline":
+            $("#node-input-outputs").val(1);
+            $(".node-input-target-row").hide();
+            break;
+          case "all":
+          case "flow":
+            $("#node-input-outputs").val(0);
+            $(".node-input-target-row").hide();
+            break;
+          case "select":
+            $("#node-input-outputs").val(0);
+            $(".node-input-target-row").show();
+            break;
+        }
+      });
+      $("#node-input-logIOMode").val(node.logIOMode);
+
+      /* START: copied from NR Catch node */
+      var scope = node.scope || [];
+
+      this._resize = function () {
+        var rows = $("#dialog-form>div:not(.node-input-target-list-row)");
+        var height = $("#dialog-form").height();
+        for (var i = 0; i < rows.length; i++) {
+          height -= $(rows[i]).outerHeight(true);
+        }
+        var editorRow = $("#dialog-form>div.node-input-target-list-row");
+        editorRow.css("height", height + "px");
+      };
+      var search = $("#node-input-catch-target-filter").searchBox({
+        style: "compact",
+        delay: 300,
+        change: function () {
+          var val = $(this).val().trim().toLowerCase();
+          if (val === "") {
+            dirList.treeList("filter", null);
+            search.searchBox("count", "");
+          } else {
+            var count = dirList.treeList("filter", function (item) {
+              return item.label.toLowerCase().indexOf(val) > -1 || item.node.type.toLowerCase().indexOf(val) > -1
+            });
+            search.searchBox("count", count + " / " + candidateNodes.length);
+          }
+        }
+      });
+      var dirList = $("#node-input-catch-target-container-div").css({ width: "100%", height: "100%" })
+        .treeList({ multi: true }).on("treelistitemmouseover", function (e, item) {
+          item.node.highlighted = true;
+          item.node.dirty = true;
+          RED.view.redraw();
+        }).on("treelistitemmouseout", function (e, item) {
+          item.node.highlighted = false;
+          item.node.dirty = true;
+          RED.view.redraw();
+        })
+      var candidateNodes = RED.nodes.filterNodes({ z: node.z });
+      var allChecked = true;
+      var items = [];
+      var nodeItemMap = {};
+
+      candidateNodes.forEach(function (n) {
+        if (n.id === node.id) {
+          return;
+        }
+        var isChecked = scope.indexOf(n.id) !== -1;
+
+        allChecked = allChecked && isChecked;
+
+        var nodeDef = RED.nodes.getType(n.type);
+        var label;
+        var sublabel;
+        if (nodeDef) {
+          var l = nodeDef.label;
+          label = (typeof l === "function" ? l.call(n) : l) || "";
+          sublabel = n.type;
+          if (sublabel.indexOf("subflow:") === 0) {
+            var subflowId = sublabel.substring(8);
+            var subflow = RED.nodes.subflow(subflowId);
+            sublabel = "subflow : " + subflow.name;
+          }
+        }
+        if (!nodeDef || !label) {
+          label = n.type;
+        }
+        nodeItemMap[n.id] = {
+          node: n,
+          label: label,
+          sublabel: sublabel,
+          selected: isChecked,
+          checkbox: true
+        };
+        items.push(nodeItemMap[n.id]);
+      });
+      dirList.treeList('data', items);
+
+      $("#node-input-catch-target-select").on("click", function (e) {
+        e.preventDefault();
+        var preselected = dirList.treeList('selected').map(function (n) { return n.node.id });
+        RED.tray.hide();
+        RED.view.selectNodes({
+          selected: preselected,
+          onselect: function (selection) {
+            RED.tray.show();
+            var newlySelected = {};
+            selection.forEach(function (n) {
+              newlySelected[n.id] = true;
+              if (nodeItemMap[n.id]) {
+                nodeItemMap[n.id].treeList.select(true);
+              }
+            })
+            preselected.forEach(function (id) {
+              if (!newlySelected[id]) {
+                nodeItemMap[id].treeList.select(false);
+              }
+            })
+          },
+          oncancel: function () {
+            RED.tray.show();
+          },
+          filter: function (n) {
+            return n.id !== node.id;
+          }
+        });
+      })
+
+      $("#node-input-scope-select").on("change", function (e) {
+        var scope = $(this).val();
+        if (scope === "target") {
+          $(".node-input-target-row").show();
+          $(".node-input-uncaught-row").hide();
+        } else {
+          $(".node-input-target-row").hide();
+          $(".node-input-uncaught-row").show();
+        }
+        node._resize();
+      });
+      if (this.scope === null) {
+        $("#node-input-scope-select").val("all");
+      } else if (this.scope === "group") {
+        $("#node-input-scope-select").val("group");
+      } else {
+        $("#node-input-scope-select").val("target");
+      }
+      $("#node-input-scope-select").trigger("change");
+      /* END: copied from NR Catch node */
+    },
+
+    oneditsave: function () {
+      const type = $('#node-input-typed-complete').typedInput('type');
+      if (type === 'full') {
+        $("#node-input-complete").val("true");
+      } else {
+        $("#node-input-complete").val($("#node-input-typed-complete").typedInput('value'));
+      }
+
+      this.scope = $("#node-input-catch-target-container-div").treeList('selected').map(function (i) { return i.node.id })
+    },
+
+    oneditresize: function (size) {
+      this._resize();
+    }
+  });
+  </script>
+
+<script type="text/html" data-template-name="logIO">
+  <style>
+    .form-row input[type=checkbox] {
+      margin: 0 !important;
+      width: auto !important;
+    }
+    .form-row input[type=checkbox] + label {
+      width: auto !important;
+    }
+  </style>
+                  
+  <div class="form-row">
+      <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+      <input type="text" id="node-input-name" placeholder="Name">
+      <input type="hidden" id="node-input-outputs"/>
+  </div>
+  <div class="form-row">
+      <label for="node-input-logger"><i class="fa fa-terminal"></i> Logger</label>
+      <input id="node-input-logger" type="node-input-logger" style="width: 70%">
+  </div>
+  <div class="form-row">
+        <label for="node-input-typed-complete"><i class="fa fa-list"></i> Output</label>
+        <input id="node-input-typed-complete" type="text">
+        <input id="node-input-complete" type="hidden">
+        <input id="node-input-targetType" type="hidden">
+    </div>
+  <div class="form-row">
+      <label for='node-input-autoStart'><i class='fa fa-play-circle'></i> Autostart</label>
+      <input type='checkbox' id='node-input-autoStart' style='width:auto ;border:none; vertical-align:baseline;' placeholder='0'>
+      <label for='node-input-autoStart'> Automatically start logging at startup</label>
+  </div>
+  <div class="form-row">
+      <label for="node-input-logIOMode"><i class="fa fa-mouse-pointer"></i> Mode</label>
+      <select id="node-input-logIOMode"></select>
+  </div>   
+                  
+  <div class="form-row node-input-target-row">
+      <button type="button" id="node-input-catch-target-select" class="red-ui-button">Select nodes</button>
+  </div>
+  <div class="form-row node-input-target-row node-input-target-list-row" style="position: relative; min-height: 100px">
+      <div style="position: absolute; top: -30px; right: 0;"><input type="text" id="node-input-catch-target-filter"></div>
+      <div id="node-input-catch-target-container-div"></div>
+  </div>
+</script>
+      
+<script type="text/x-red" data-help-name="logIO">
+ </script>

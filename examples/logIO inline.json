@@ -1,0 +1,271 @@
+[
+    {
+        "id": "d440441c3a4db04f",
+        "type": "logIO",
+        "z": "8670f2ac78d992c8",
+        "name": "logIO",
+        "outputs": 1,
+        "active": true,
+        "logger": "04cb1ffbc3c2a913",
+        "complete": "payload",
+        "targetType": "msg",
+        "logIOMode": "inline",
+        "autoStart": true,
+        "scope": [],
+        "x": 370,
+        "y": 240,
+        "wires": [
+            [
+                "7324db665c118cf6"
+            ]
+        ]
+    },
+    {
+        "id": "b1af3a03b41a64da",
+        "type": "inject",
+        "z": "8670f2ac78d992c8",
+        "name": "logLevel: error",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "_logIO_",
+                "v": "{\"logLevel\": \"error\" }",
+                "vt": "json"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "my topic",
+        "payload": "",
+        "payloadType": "date",
+        "x": 110,
+        "y": 180,
+        "wires": [
+            [
+                "d440441c3a4db04f"
+            ]
+        ]
+    },
+    {
+        "id": "3c428c1341681752",
+        "type": "inject",
+        "z": "8670f2ac78d992c8",
+        "name": "logLevel: warn",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "_logIO_",
+                "v": "{\"logLevel\": \"warn\" }",
+                "vt": "json"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "my topic",
+        "payload": "",
+        "payloadType": "date",
+        "x": 110,
+        "y": 220,
+        "wires": [
+            [
+                "d440441c3a4db04f"
+            ]
+        ]
+    },
+    {
+        "id": "81f55d699cb05920",
+        "type": "inject",
+        "z": "8670f2ac78d992c8",
+        "name": "logLevel: debug",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "_logIO_",
+                "v": "{\"logLevel\": \"debug\" }",
+                "vt": "json"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "my topic",
+        "payload": "",
+        "payloadType": "date",
+        "x": 120,
+        "y": 260,
+        "wires": [
+            [
+                "d440441c3a4db04f"
+            ]
+        ]
+    },
+    {
+        "id": "a146ac88da5e9262",
+        "type": "inject",
+        "z": "8670f2ac78d992c8",
+        "name": "without log level",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "my topic",
+        "payload": "",
+        "payloadType": "date",
+        "x": 120,
+        "y": 100,
+        "wires": [
+            [
+                "d440441c3a4db04f"
+            ]
+        ]
+    },
+    {
+        "id": "d9de64fbef572819",
+        "type": "inject",
+        "z": "8670f2ac78d992c8",
+        "name": "logLevel: error and activate",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "_logIO_",
+                "v": "{\"logLevel\": \"error\", \"activate\": true }",
+                "vt": "json"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "my topic",
+        "payload": "",
+        "payloadType": "date",
+        "x": 150,
+        "y": 340,
+        "wires": [
+            [
+                "d440441c3a4db04f"
+            ]
+        ]
+    },
+    {
+        "id": "29620bd482e76193",
+        "type": "inject",
+        "z": "8670f2ac78d992c8",
+        "name": "logLevel: error and deactivate",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "_logIO_",
+                "v": "{\"logLevel\": \"error\", \"activate\": false }",
+                "vt": "json"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "my topic",
+        "payload": "",
+        "payloadType": "date",
+        "x": 160,
+        "y": 380,
+        "wires": [
+            [
+                "d440441c3a4db04f"
+            ]
+        ]
+    },
+    {
+        "id": "7324db665c118cf6",
+        "type": "debug",
+        "z": "8670f2ac78d992c8",
+        "name": "debug 1",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "topic",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 540,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "c8b13d2062e82590",
+        "type": "comment",
+        "z": "8670f2ac78d992c8",
+        "name": "Control debug node logs topic to simulate pass through behaviour even if logging is deativated on logIO",
+        "info": "",
+        "x": 830,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "04cb1ffbc3c2a913",
+        "type": "logIO-logger",
+        "name": "loggerIO [warn]",
+        "logLevel": "warn",
+        "isTimestampUTC": false,
+        "logMeta": "all",
+        "logMetaOptions": "",
+        "logOutput": "nr-debugger,console",
+        "fileFileName": "logIO-%DATE%.log",
+        "fileDirName": "",
+        "fileDatePattern": "YYYY-HH-MM",
+        "fileIsJsonFormat": false,
+        "fileZippedArchive": false,
+        "fileMaxSize": "10",
+        "fileMaxSizeUnit": "m",
+        "fileMaxFiles": "",
+        "fileMaxFilesUnit": "",
+        "consoleIsJsonFormat": false,
+        "elkUrl": "https://10.11.12.10:9200",
+        "elkIndex": "node-red"
+    }
+]

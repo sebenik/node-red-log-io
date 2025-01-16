@@ -1,0 +1,238 @@
+<script type="text/javascript">
+  const defaultLogFilename = 'logIO-%DATE%.log';
+  const defaultFilenameDatePattern = 'YYYY-HH-MM';
+  const logLevelOptions = ['error', 'warn', 'info', 'debug'];
+  const logOutputOptions = [
+    { value: 'file', label: 'File' },
+    { value: 'nr-debugger', label: 'Debugger panel' },
+    { value: 'console', label: 'Console' },
+    { value: 'elk', label: 'ElasticSearch' },
+  ];
+  const logOutputTypes = [
+    { value: 'logOutput', multiple: true, options: logOutputOptions },
+  ];
+  const fileMaxSizeTypes = [
+    { value: '', label: 'bytes', title: 'bytes' },
+    { value: 'k', label: 'KB', title: 'Kilobytes' },
+    { value: 'm', label: 'MB', title: 'Megabytes' },
+    { value: 'g', label: 'GB', title: 'Gigabytes' },
+  ];
+  const fileMaxFilesTypes = [
+    { value: '', label: 'Number of files' },
+    { value: 'd', label: 'Number of days' },
+  ];
+  const logLevelTypes = [
+    { value: 'logLevel', options: logLevelOptions },
+  ];
+  const logMetaOptions = [
+    { value: '_msgid', label: 'message ID', title: 'Message ID', multiple: true },
+    { value: 'eventName', label: 'event name', title: 'Event name (INPUT or OUTPUT)', multiple: true },
+    { value: 'loggerNodeId', label: 'logIO node ID', title: 'ID of logIO node', multiple: true },
+    { value: 'sourceNodeId', label: 'source node ID', title: 'ID of the node that is being logged', multiple: true },
+    { value: 'sourceNodeName', label: 'source node name', title: 'Name of the node that is being logged', multiple: true },
+    { value: 'sourceNodeType', label: 'source node type', title: 'Type of the node that is being logged', multiple: true },
+  ]
+  const logMetaTypes = [
+    { value: 'all', label: 'All meta data', icon: 'fa fa-circle-o', hasValue: false, showLabel: true },
+    { value: 'selected', label: 'Selected meta data', icon: 'fa fa-list', showLabel: false, multiple: true, options: logMetaOptions },
+    { value: 'none', label: 'None', icon: 'fa fa-ban', hasValue: false, showLabel: true }
+  ];
+
+  RED.nodes.registerType('logIO-logger', {
+      category: 'config',
+
+      credentials: {
+        elkUsername: { type: 'text' },
+        elkPassword: {type: 'password' },
+      },
+
+      defaults: {
+          name: { value: 'loggerIO' },
+          logLevel: { value: 'debug' },
+          isTimestampUTC: { value: false },
+          logMeta: { value: 'none' },
+          logMetaOptions: { value: '' },
+          logOutput: { value: 'nr-debugger' },
+
+          fileFileName: { value: defaultLogFilename },
+          fileDirName: { value: '' },
+          fileDatePattern: { value: defaultFilenameDatePattern },
+          fileIsJsonFormat: { value: false },
+          fileZippedArchive: { value: false },
+          fileMaxSize: { value: '10' },
+          fileMaxSizeUnit: { value: 'm' },
+          fileMaxFiles: { value: '' },
+          fileMaxFilesUnit: { value: '' },
+          
+          consoleIsJsonFormat: { value: false },
+
+          elkUrl: { value: 'http://localhost:9200' },
+          elkIndex: { value: 'node-red-%t[YYYY.MM.DD]' },
+      },
+
+      label: function() {
+        return this.name || "logger";
+      },
+
+      oneditprepare: function() {
+        $('#node-config-input-logOutput').on('change', function(event) {
+          const selectedValues = event.target.value.split(',');
+          logOutputOptions.map((o) => o.value).forEach((v) => {
+            $(`#${v}Fields`)[selectedValues.includes(v) ? 'show' : 'hide']();
+          });
+        });
+
+        $('#node-config-input-fileFileName').on('blur', function(event) {
+          if(!event.target.value.trim()) {
+            event.target.value = defaultLogFilename;
+          }
+        })
+
+        $('#node-config-input-fileDatePattern').on('blur', function(event) {
+          if(!event.target.value.trim()) {
+            event.target.value = defaultFilenameDatePattern;
+          }
+        })
+
+        $('#node-config-input-logLevel').typedInput({ types: logLevelTypes });
+        $('#node-config-input-logOutput').typedInput({ types: logOutputTypes });
+        $('#node-config-input-fileMaxSize').typedInput({
+          typeField: '#node-config-input-fileMaxSizeUnit',
+          types:fileMaxSizeTypes,
+        });
+        $('#node-config-input-fileMaxFiles').typedInput({
+          typeField: '#node-config-input-fileMaxFilesUnit',
+          types:fileMaxFilesTypes,
+        });
+        $('#node-config-input-logMetaOptions').typedInput({
+          typeField: '#node-config-input-logMeta',
+          types: logMetaTypes,
+        });
+      },
+
+      oneditsave: function() {
+      },
+    });
+</script>
+
+<script type="text/html" data-template-name="logIO-logger">
+  <style>
+    .io-fields {
+      background: var(--red-ui-primary-background);
+      padding: 5px;
+    }
+    .form-row label {
+      width: 120px !important;
+    }
+    .form-row label.lio-title {
+      font-weight: bold;
+      width: 100% !important;
+    }
+    .form-row input[type=checkbox] {
+      margin: 0 !important;
+      width: auto !important;
+    }
+    .form-row input[type=checkbox] + label {
+      width: auto !important;
+    }
+  </style>
+
+  <div class="form-row">
+    <label for="node-config-input-name"><i class="fa fa-tag"></i> Name</label>
+    <input type="text" id="node-config-input-name" placeholder="Name">
+  </div>
+
+  <div class="form-row">
+    <label><i class="fa fa-exclamation"></i> Log level</span></label>
+    <input id="node-config-input-logLevel" type="text">
+  </div>
+
+  <div class="form-row">
+    <label for='node-config-input-isTimestampUTC'><i class='fa fa-clock-o'></i> UTC</label>
+    <input type='checkbox' id='node-config-input-isTimestampUTC'>
+    <label for='node-config-input-isTimestampUTC'> Output timestamps in UTC</label>
+  </div>
+
+  <div class="form-row">
+    <label for='node-config-input-logMetaOptions'><i class='fa fa-list-alt'></i> Log metadata</label>
+    <input type='text' id='node-config-input-logMetaOptions'>
+    <input type='hidden' id='node-config-input-logMeta'>
+  </div>
+
+  <div class="form-row">
+    <label><i class="fa fa-random"></i> Log output</span></label>
+    <input id="node-config-input-logOutput" type="text">
+  </div>
+
+  <div id="fileFields" class="form-row io-fields">
+    <div class="form-row">
+      <label class="lio-title"><span>File options</span></label>
+    </div>
+    <div class="form-row"">
+      <label for="node-config-input-fileFileName"><i class="fa fa-file-o"></i> File name</label>
+      <input type="text" id="node-config-input-fileFileName">
+    </div>
+    <div class="form-row"">
+      <label for="node-config-input-fileDatePattern"><i class="fa fa-calendar-o"></i> File date pattern</label>
+      <input type="text" id="node-config-input-fileDatePattern">
+    </div>
+    <div class="form-row"">
+      <label for="node-config-input-fileDirName"><i class="fa fa-folder-o"></i> Directory</label>
+      <input type="text" id="node-config-input-fileDirName">
+    </div>
+    <div class="form-row"">
+      <label for="node-config-input-fileIsJsonFormat"><i class="fa fa-minus-square-o"></i> JSON</label>
+      <input type="checkbox" id="node-config-input-fileIsJsonFormat">
+      <label for="node-config-input-fileIsJsonFormat"> Log whole output in JSON</label>
+    </div>
+    <div class="form-row"">
+      <label for="node-config-input-fileZippedArchive"><i class="fa fa-file-archive-o"></i> Compress</label>
+      <input type="checkbox" id="node-config-input-fileZippedArchive">
+      <label for="node-config-input-fileZippedArchive"> Gzip archived files</label>
+    </div>
+    <div class="form-row"">
+      <label for="node-config-input-fileMaxSize"><i class="fa fa-arrows-v"></i> Max file size</label>
+      <input type="text" id="node-config-input-fileMaxSize">
+    </div>
+    <input type="hidden" id="node-config-input-fileMaxSizeUnit">
+    <div class="form-row"">
+      <label for="node-config-input-fileMaxFiles"><i class="fa fa-hashtag"></i> Files to keep</label>
+      <input type="text" id="node-config-input-fileMaxFiles">
+      <input type="hidden" id="node-config-input-fileMaxFilesUnit">
+    </div>
+  </div>
+
+  <div id="consoleFields" class="form-row io-fields">
+    <div class="form-row">
+      <label class="lio-title"><span>Console options</span></label>
+    </div>
+    <div class="form-row"">
+      <label for="node-config-input-consoleIsJsonFormat"><i class="fa fa-minus-square-o"></i> JSON</label>
+      <input type="checkbox" id="node-config-input-consoleIsJsonFormat">
+      <label for="node-config-input-consoleIsJsonFormat"> Log whole output in JSON</label>
+    </div>
+  </div>
+
+  <div id="elkFields" class="form-row io-fields">
+    <div class="form-row">
+      <label class="lio-title"><span>ElasticSearch options</span></label>
+    </div>
+    <div class="form-row"">
+      <label for="node-config-input-elkUrl"><i class="fa fa-globe"></i> URL</label>
+      <input type="text" id="node-config-input-elkUrl">
+    </div>
+    <div class="form-row"">
+      <label for="node-config-input-elkUsername"><i class="fa fa-user"></i> Username</label>
+      <input type="text" id="node-config-input-elkUsername">
+    </div>
+    <div class="form-row"">
+      <label for="node-config-input-elkPassword"><i class="fa fa-key"></i> Password</label>
+      <input type="password" id="node-config-input-elkPassword">
+    </div>
+    <div class="form-row"">
+      <label for="node-config-input-elkIndex"><i class="fa fa-table"></i> Index</label>
+      <input type="text" id="node-config-input-elkIndex">
+    </div>
+  </div>
+
+</script>

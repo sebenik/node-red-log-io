@@ -30,8 +30,6 @@ module.exports = function (RED) {
           return;
         }
 
-        message = JSON.parse(JSON.stringify(message));
-
         const m = {};
         if (node.logMeta !== 'none') {
           const lmAll = node.logMeta === 'all';
@@ -70,8 +68,9 @@ module.exports = function (RED) {
       RED.hooks.add(`onSend.msg-logIO-${node.id}`, (sendEvents) => {
         sendEvents.forEach((sendEvent) => {
           if (node.observedNodeIds.has(sendEvent.source.node.id)) {
+            const message = RED.util.cloneMessage(sendEvent.msg);
             setImmediate(() => {
-              handleMsgEvent('OUTPUT', sendEvent.msg, sendEvent.source.node.id);
+              handleMsgEvent('OUTPUT', message, sendEvent.source.node.id);
             });
           }
         });
@@ -79,9 +78,10 @@ module.exports = function (RED) {
 
       RED.hooks.add(`onReceive.msg-logIO-${node.id}`, (receiveEvent) => {
         if (node.observedNodeIds.has(receiveEvent.destination.node.id)) {
+          const message = RED.util.cloneMessage(receiveEvent.msg);
           setImmediate(() => {
             if (node.isActivated) {
-              handleMsgEvent('INPUT', receiveEvent.msg, receiveEvent.destination.node.id);
+              handleMsgEvent('INPUT', message, receiveEvent.destination.node.id);
             }
           });
         }

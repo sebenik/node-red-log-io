@@ -1,3 +1,5 @@
+const utils = require('./lib/utils');
+
 module.exports = function (RED) {
   function LogIONode(config) {
     RED.nodes.createNode(this, config);
@@ -12,6 +14,9 @@ module.exports = function (RED) {
     this.logToNrDebugger = false;
     this.config = config;
     this.logLevelOptions = ['error', 'warn', 'info', 'debug'];
+    this.logIOScope = this.logIOMode === 'inline'
+      ? 'I'
+      : (config.logIOScope || 'I');
 
     const node = this;
 
@@ -65,27 +70,25 @@ module.exports = function (RED) {
     function activate() {
       node.isActivated = true;
 
-      RED.hooks.add(`onSend.msg-logIO-${node.id}`, (sendEvents) => {
-        sendEvents.forEach((sendEvent) => {
-          if (node.observedNodeIds.has(sendEvent.source.node.id)) {
-            const message = RED.util.cloneMessage(sendEvent.msg);
-            setImmediate(() => {
+      if (node.logIOScope.includes('O')) {
+        RED.hooks.add(`onSend.msg-logIO-${node.id}`, (sendEvents) => {
+          sendEvents.forEach((sendEvent) => {
+            if (node.observedNodeIds.has(sendEvent.source.node.id)) {
+              const message = RED.util.cloneMessage(sendEvent.msg);
               handleMsgEvent('OUTPUT', message, sendEvent.source.node.id);
-            });
-          }
-        });
-      });
-
-      RED.hooks.add(`onReceive.msg-logIO-${node.id}`, (receiveEvent) => {
-        if (node.observedNodeIds.has(receiveEvent.destination.node.id)) {
-          const message = RED.util.cloneMessage(receiveEvent.msg);
-          setImmediate(() => {
-            if (node.isActivated) {
-              handleMsgEvent('INPUT', message, receiveEvent.destination.node.id);
             }
           });
-        }
-      });
+        });
+      }
+
+      if (node.logIOScope.includes('I')) {
+        RED.hooks.add(`onReceive.msg-logIO-${node.id}`, (receiveEvent) => {
+          if (node.observedNodeIds.has(receiveEvent.destination.node.id)) {
+            const message = RED.util.cloneMessage(receiveEvent.msg);
+            handleMsgEvent('INPUT', message, receiveEvent.destination.node.id);
+          }
+        });
+      }
 
       setNodeStatus();
     }
@@ -141,24 +144,12 @@ module.exports = function (RED) {
       node.logMetaOptions = node.logger.config.logMetaOptions.split(',');
       node.logToNrDebugger = node.logger.config.logOutput.split(',').includes('nr-debugger');
 
-      const ignoredNodeTypes = ['tab', 'subflow', 'comment'];
-
-      function addWiredNodes(n) {
-        n.wires.forEach((wireArray) => {
-          wireArray.forEach((connectedNodeId) => {
-            if (!node.observedNodeIds.has(connectedNodeId)) {
-              node.observedNodeIds.add(connectedNodeId);
-              let connectedNode = RED.nodes.getNode(connectedNodeId);
-              connectedNode && addWiredNodes(connectedNode);
-            }
-          });
-        });
-      };
-
       switch (node.logIOMode) {
         case 'inline':
           node.observedNodeIds = new Set([node.id]);
-          addWiredNodes(node);
+          break;
+        case 'wired':
+          node.observedNodeIds = utils.getAllWiredNodes(RED, node);
           break;
         case 'flow':
           node.observedNodeIds = new Set(Object.keys(node._flow.activeNodes));
@@ -210,7 +201,7 @@ module.exports = function (RED) {
       this.logger?.close();
     });
 
-    setTimeout(init);
+    setImmediate(init);
   }
 
   RED.nodes.registerType('logIO', LogIONode);

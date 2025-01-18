@@ -158,12 +158,7 @@ module.exports = function (RED) {
           node.observedNodeIds = new Set(config.scope || []);
           break;
         case 'all':
-          node.observedNodeIds = new Set();
-          RED.nodes.eachNode((n) => {
-            if (!ignoredNodeTypes.includes(n.type)) {
-              node.observedNodeIds.add(n.id);
-            }
-          });
+          node.observedNodeIds = utils.getAllNodes(RED);
           break;
       }
 

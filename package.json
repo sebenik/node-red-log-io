@@ -1,6 +1,6 @@
 {
   "name": "@zigasebenik/node-red-log-io",
-  "version": "0.9.3",
+  "version": "1.0.0",
   "description": "A Node-RED node to log input and output messages to various outputs.",
   "dependencies": {
     "@zigasebenik/winston-daily-rotate-file": "^5.0.2",
@@ -33,7 +33,11 @@
     "type": "git",
     "url": "https://github.com/sebenik/node-red-log-io"
   },
+  "engines" : {
+    "node" : ">=20.0.0"
+  },
   "node-red": {
+    "version": ">=4.0.0",
     "nodes": {
       "logIO-logger": "log-io-logger.js",
       "logIO": "log-io.js"

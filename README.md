@@ -64,16 +64,18 @@ logIO currently supports following log outputs (multiple can be selected):
 #### System
 ![console options](https://github.com/sebenik/node-red-log-io/blob/master/docs/images/console-options.png?raw=true)
 - **JSON**: whether or not to format logs in JSON format
+
 ![console output](https://github.com/sebenik/node-red-log-io/blob/master/docs/images/output-console.png?raw=true)
 
 
 #### ElasticSearch
-![console options](https://github.com/sebenik/node-red-log-io/blob/master/docs/images/es-options.png?raw=true)
+![ElasticSearch options](https://github.com/sebenik/node-red-log-io/blob/master/docs/images/es-options.png?raw=true)
 - **URL** Url of ES instance.
 - **Username**
 - **Password** 
 - **Index** Name of the index.
-![file output](https://github.com/sebenik/node-red-log-io/blob/master/docs/images/output-es.png?raw=true)
+
+![ElasticSearch output](https://github.com/sebenik/node-red-log-io/blob/master/docs/images/output-es.png?raw=true)
 
 ### Log levels
 

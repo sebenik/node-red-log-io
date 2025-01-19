@@ -1,0 +1,641 @@
+[
+    {
+        "id": "ad3b1522e7f60445",
+        "type": "group",
+        "z": "8670f2ac78d992c8",
+        "name": "Inline mode",
+        "style": {
+            "label": true
+        },
+        "nodes": [
+            "c7c58326a362d4a2",
+            "44aa67f19c93b4cd",
+            "d541982545a2e51e"
+        ],
+        "x": 34,
+        "y": 39,
+        "w": 472,
+        "h": 82,
+        "info": "In inline mode, logIO behave the same as core debug node."
+    },
+    {
+        "id": "c7c58326a362d4a2",
+        "type": "inject",
+        "z": "8670f2ac78d992c8",
+        "g": "ad3b1522e7f60445",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "iso",
+        "payloadType": "date",
+        "x": 140,
+        "y": 80,
+        "wires": [
+            [
+                "44aa67f19c93b4cd"
+            ]
+        ]
+    },
+    {
+        "id": "44aa67f19c93b4cd",
+        "type": "function",
+        "z": "8670f2ac78d992c8",
+        "g": "ad3b1522e7f60445",
+        "name": "function 1",
+        "func": "node.warn(\"Hello from function.\\nIn inline mode, logIO behaves the same as core debug node\");\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 280,
+        "y": 80,
+        "wires": [
+            [
+                "d541982545a2e51e"
+            ]
+        ]
+    },
+    {
+        "id": "d541982545a2e51e",
+        "type": "logIO",
+        "z": "8670f2ac78d992c8",
+        "g": "ad3b1522e7f60445",
+        "name": "logIO",
+        "active": true,
+        "logger": "0ebd2e83d96a938a",
+        "complete": "payload",
+        "targetType": "msg",
+        "logIOMode": "inline",
+        "logIOScope": "IO",
+        "autoStart": true,
+        "scope": [],
+        "x": 410,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "0ebd2e83d96a938a",
+        "type": "logIO-logger",
+        "name": "loggerIO",
+        "logLevel": "debug",
+        "isTimestampUTC": false,
+        "logMeta": "none",
+        "logMetaOptions": "",
+        "logOutput": "file,nr-debugger,console",
+        "fileFileName": "logIO-%DATE%.log",
+        "fileDirName": "",
+        "fileDatePattern": "YYYY-HH-MM",
+        "fileIsJsonFormat": false,
+        "fileZippedArchive": false,
+        "fileMaxSize": "10",
+        "fileMaxSizeUnit": "m",
+        "fileMaxFiles": "",
+        "fileMaxFilesUnit": "",
+        "consoleIsJsonFormat": false,
+        "elkUrl": "http://localhost:9200",
+        "elkIndex": "node-red"
+    },
+    {
+        "id": "c6edcc7ead5341fe",
+        "type": "group",
+        "z": "8670f2ac78d992c8",
+        "name": "Wired mode (log INPUTS & OUTPUTS)",
+        "style": {
+            "label": true
+        },
+        "nodes": [
+            "d1bf8c4b4ac8f35e",
+            "2f14489f730c61f2",
+            "9e66b12ffdf12eb6",
+            "18322b767abb1214"
+        ],
+        "x": 34,
+        "y": 159,
+        "w": 472,
+        "h": 142,
+        "info": "In inline mode, logIO behave the same as core debug node."
+    },
+    {
+        "id": "d1bf8c4b4ac8f35e",
+        "type": "inject",
+        "z": "8670f2ac78d992c8",
+        "g": "c6edcc7ead5341fe",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "iso",
+        "payloadType": "date",
+        "x": 140,
+        "y": 200,
+        "wires": [
+            [
+                "2f14489f730c61f2",
+                "18322b767abb1214"
+            ]
+        ]
+    },
+    {
+        "id": "2f14489f730c61f2",
+        "type": "function",
+        "z": "8670f2ac78d992c8",
+        "g": "c6edcc7ead5341fe",
+        "name": "function 2",
+        "func": "node.warn(\"Hello from function\\n In Wired mode, logIO logs messages from all nodes that are in any way wired to logIO node. logIO can log INPUT & OUTPUT messages.\");\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 280,
+        "y": 200,
+        "wires": [
+            [
+                "9e66b12ffdf12eb6"
+            ]
+        ]
+    },
+    {
+        "id": "9e66b12ffdf12eb6",
+        "type": "logIO",
+        "z": "8670f2ac78d992c8",
+        "g": "c6edcc7ead5341fe",
+        "name": "logIO",
+        "active": true,
+        "logger": "0ebd2e83d96a938a",
+        "complete": "payload",
+        "targetType": "msg",
+        "logIOMode": "wired",
+        "logIOScope": "IO",
+        "autoStart": true,
+        "scope": [],
+        "x": 410,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "18322b767abb1214",
+        "type": "function",
+        "z": "8670f2ac78d992c8",
+        "g": "c6edcc7ead5341fe",
+        "name": "function 3",
+        "func": "return msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 280,
+        "y": 260,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "17499d47c7dc16ab",
+        "type": "group",
+        "z": "8670f2ac78d992c8",
+        "name": "Wired mode (log INPUTS only)",
+        "style": {
+            "label": true
+        },
+        "nodes": [
+            "2fea8f2e26e639ec",
+            "b6895421b154cf94",
+            "5e193e8bbb9519cc",
+            "882e17c5e29b1dbc"
+        ],
+        "x": 34,
+        "y": 339,
+        "w": 472,
+        "h": 142,
+        "info": "In inline mode, logIO behave the same as core debug node."
+    },
+    {
+        "id": "2fea8f2e26e639ec",
+        "type": "inject",
+        "z": "8670f2ac78d992c8",
+        "g": "17499d47c7dc16ab",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "iso",
+        "payloadType": "date",
+        "x": 140,
+        "y": 380,
+        "wires": [
+            [
+                "b6895421b154cf94",
+                "882e17c5e29b1dbc"
+            ]
+        ]
+    },
+    {
+        "id": "b6895421b154cf94",
+        "type": "function",
+        "z": "8670f2ac78d992c8",
+        "g": "17499d47c7dc16ab",
+        "name": "function 4",
+        "func": "node.warn(\"Hello from function\\n In Wired mode, logIO logs messages from all nodes that are in any way wired to logIO node. logIO can also log only INPUT messages.\");\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 280,
+        "y": 380,
+        "wires": [
+            [
+                "5e193e8bbb9519cc"
+            ]
+        ]
+    },
+    {
+        "id": "5e193e8bbb9519cc",
+        "type": "logIO",
+        "z": "8670f2ac78d992c8",
+        "g": "17499d47c7dc16ab",
+        "name": "logIO",
+        "active": true,
+        "logger": "0ebd2e83d96a938a",
+        "complete": "payload",
+        "targetType": "msg",
+        "logIOMode": "wired",
+        "logIOScope": "I",
+        "autoStart": true,
+        "scope": [],
+        "x": 410,
+        "y": 380,
+        "wires": []
+    },
+    {
+        "id": "882e17c5e29b1dbc",
+        "type": "function",
+        "z": "8670f2ac78d992c8",
+        "g": "17499d47c7dc16ab",
+        "name": "function 5",
+        "func": "return msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 280,
+        "y": 440,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "0685904f7f649034",
+        "type": "group",
+        "z": "8670f2ac78d992c8",
+        "name": "logLevels",
+        "style": {
+            "label": true
+        },
+        "nodes": [
+            "c1c9207e7f756ab9",
+            "90f31019a5472a6e",
+            "0b7844d11f977598",
+            "e8815c04ac57a463",
+            "652cafe335ca17e9"
+        ],
+        "x": 34,
+        "y": 519,
+        "w": 472,
+        "h": 202
+    },
+    {
+        "id": "c1c9207e7f756ab9",
+        "type": "logIO",
+        "z": "8670f2ac78d992c8",
+        "g": "0685904f7f649034",
+        "name": "logIO",
+        "active": true,
+        "logger": "9a5d59359875bb0e",
+        "complete": "true",
+        "targetType": "full",
+        "logIOMode": "inline",
+        "logIOScope": "IO",
+        "autoStart": true,
+        "scope": [
+            "90f31019a5472a6e",
+            "0b7844d11f977598",
+            "e8815c04ac57a463",
+            "652cafe335ca17e9"
+        ],
+        "x": 410,
+        "y": 620,
+        "wires": []
+    },
+    {
+        "id": "90f31019a5472a6e",
+        "type": "inject",
+        "z": "8670f2ac78d992c8",
+        "g": "0685904f7f649034",
+        "name": "debug",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "_logIO_",
+                "v": "{ \"logLevel\": \"debug\" }",
+                "vt": "json"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 130,
+        "y": 560,
+        "wires": [
+            [
+                "c1c9207e7f756ab9"
+            ]
+        ]
+    },
+    {
+        "id": "0b7844d11f977598",
+        "type": "inject",
+        "z": "8670f2ac78d992c8",
+        "g": "0685904f7f649034",
+        "name": "warn",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "_logIO_",
+                "v": "{ \"logLevel\": \"warn\" }",
+                "vt": "json"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 130,
+        "y": 640,
+        "wires": [
+            [
+                "c1c9207e7f756ab9"
+            ]
+        ]
+    },
+    {
+        "id": "e8815c04ac57a463",
+        "type": "inject",
+        "z": "8670f2ac78d992c8",
+        "g": "0685904f7f649034",
+        "name": "info",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "_logIO_",
+                "v": "{ \"logLevel\": \"info\" }",
+                "vt": "json"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 130,
+        "y": 600,
+        "wires": [
+            [
+                "c1c9207e7f756ab9"
+            ]
+        ]
+    },
+    {
+        "id": "652cafe335ca17e9",
+        "type": "inject",
+        "z": "8670f2ac78d992c8",
+        "g": "0685904f7f649034",
+        "name": "error",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "_logIO_",
+                "v": "{ \"logLevel\": \"error\" }",
+                "vt": "json"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 130,
+        "y": 680,
+        "wires": [
+            [
+                "c1c9207e7f756ab9"
+            ]
+        ]
+    },
+    {
+        "id": "9a5d59359875bb0e",
+        "type": "logIO-logger",
+        "name": "loggerIO info",
+        "logLevel": "info",
+        "isTimestampUTC": false,
+        "logMeta": "none",
+        "logMetaOptions": "",
+        "logOutput": "nr-debugger",
+        "fileFileName": "logIO-%DATE%.log",
+        "fileDirName": "",
+        "fileDatePattern": "YYYY-MM-DD",
+        "fileIsJsonFormat": false,
+        "fileZippedArchive": false,
+        "fileMaxSize": "10",
+        "fileMaxSizeUnit": "m",
+        "fileMaxFiles": "",
+        "fileMaxFilesUnit": "",
+        "consoleIsJsonFormat": false,
+        "elkUrl": "http://localhost:9200",
+        "elkIndex": "node-red"
+    },
+    {
+        "id": "d2dd6fb71c3adead",
+        "type": "group",
+        "z": "8670f2ac78d992c8",
+        "name": "Activate or deactivate logging",
+        "style": {
+            "label": true
+        },
+        "nodes": [
+            "d56bb96746f99999",
+            "878f6550d7d46efe",
+            "5fe4743b6857d313",
+            "839ca0968ec940f8"
+        ],
+        "x": 554,
+        "y": 39,
+        "w": 472,
+        "h": 182
+    },
+    {
+        "id": "d56bb96746f99999",
+        "type": "inject",
+        "z": "8670f2ac78d992c8",
+        "g": "d2dd6fb71c3adead",
+        "name": "debug + activate logging",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "_logIO_",
+                "v": "{ \"logLevel\": \"debug\", \"activate\": true }",
+                "vt": "json"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 710,
+        "y": 140,
+        "wires": [
+            [
+                "5fe4743b6857d313"
+            ]
+        ]
+    },
+    {
+        "id": "878f6550d7d46efe",
+        "type": "inject",
+        "z": "8670f2ac78d992c8",
+        "g": "d2dd6fb71c3adead",
+        "name": "debug + deactivate logging",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "_logIO_",
+                "v": "{ \"logLevel\": \"debug\", \"activate\": false }",
+                "vt": "json"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 710,
+        "y": 180,
+        "wires": [
+            [
+                "5fe4743b6857d313"
+            ]
+        ]
+    },
+    {
+        "id": "5fe4743b6857d313",
+        "type": "logIO",
+        "z": "8670f2ac78d992c8",
+        "g": "d2dd6fb71c3adead",
+        "name": "logIO",
+        "active": true,
+        "logger": "0ebd2e83d96a938a",
+        "complete": "true",
+        "targetType": "full",
+        "logIOMode": "inline",
+        "logIOScope": "IO",
+        "autoStart": true,
+        "scope": [
+            "90f31019a5472a6e",
+            "0b7844d11f977598",
+            "e8815c04ac57a463",
+            "652cafe335ca17e9"
+        ],
+        "x": 930,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "839ca0968ec940f8",
+        "type": "inject",
+        "z": "8670f2ac78d992c8",
+        "g": "d2dd6fb71c3adead",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 760,
+        "y": 80,
+        "wires": [
+            [
+                "5fe4743b6857d313"
+            ]
+        ]
+    }
+]

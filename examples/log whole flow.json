@@ -1,0 +1,160 @@
+[
+    {
+        "id": "246ba0fa99dab033",
+        "type": "group",
+        "z": "c405a4cc856fa409",
+        "name": "Log INPUT & OUTPUT of all node in this flow",
+        "style": {
+            "label": true
+        },
+        "nodes": [
+            "bc742ed0909cf067",
+            "6ff771a879c2edbe",
+            "7200a966d57fd2fe",
+            "12cffa0d9fc26ad8",
+            "5d40fe72dcfeaaae"
+        ],
+        "x": 54,
+        "y": 59,
+        "w": 652,
+        "h": 142
+    },
+    {
+        "id": "bc742ed0909cf067",
+        "type": "logIO",
+        "z": "c405a4cc856fa409",
+        "g": "246ba0fa99dab033",
+        "name": "logIO 1",
+        "active": true,
+        "logger": "9a5d59359875bb0e",
+        "complete": "payload",
+        "targetType": "msg",
+        "logIOMode": "flow",
+        "logIOScope": "IO",
+        "autoStart": true,
+        "scope": [],
+        "x": 140,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "6ff771a879c2edbe",
+        "type": "inject",
+        "z": "c405a4cc856fa409",
+        "g": "246ba0fa99dab033",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 160,
+        "y": 160,
+        "wires": [
+            [
+                "7200a966d57fd2fe"
+            ]
+        ]
+    },
+    {
+        "id": "7200a966d57fd2fe",
+        "type": "function",
+        "z": "c405a4cc856fa409",
+        "g": "246ba0fa99dab033",
+        "name": "function 6",
+        "func": "msg.payload = 'test';\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 300,
+        "y": 160,
+        "wires": [
+            [
+                "12cffa0d9fc26ad8"
+            ]
+        ]
+    },
+    {
+        "id": "12cffa0d9fc26ad8",
+        "type": "change",
+        "z": "c405a4cc856fa409",
+        "g": "246ba0fa99dab033",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "test2",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 460,
+        "y": 160,
+        "wires": [
+            [
+                "5d40fe72dcfeaaae"
+            ]
+        ]
+    },
+    {
+        "id": "5d40fe72dcfeaaae",
+        "type": "function",
+        "z": "c405a4cc856fa409",
+        "g": "246ba0fa99dab033",
+        "name": "function 7",
+        "func": "\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 620,
+        "y": 160,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "9a5d59359875bb0e",
+        "type": "logIO-logger",
+        "name": "loggerIO info",
+        "logLevel": "info",
+        "isTimestampUTC": false,
+        "logMeta": "none",
+        "logMetaOptions": "",
+        "logOutput": "nr-debugger",
+        "fileFileName": "logIO-%DATE%.log",
+        "fileDirName": "",
+        "fileDatePattern": "YYYY-MM-DD",
+        "fileIsJsonFormat": false,
+        "fileZippedArchive": false,
+        "fileMaxSize": "10",
+        "fileMaxSizeUnit": "m",
+        "fileMaxFiles": "",
+        "fileMaxFilesUnit": "",
+        "consoleIsJsonFormat": false,
+        "elkUrl": "http://localhost:9200",
+        "elkIndex": "node-red"
+    }
+]

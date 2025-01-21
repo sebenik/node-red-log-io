@@ -6,6 +6,7 @@
     "@zigasebenik/winston-daily-rotate-file": "^5.0.2",
     "dayjs": "^1.11.13",
     "json-stringify-safe": "^5.0.1",
+    "object-hash": "^3.0.0",
     "winston": "^3.13.0",
     "winston-elasticsearch": "^0.15.2"
   },
@@ -33,8 +34,8 @@
     "type": "git",
     "url": "https://github.com/sebenik/node-red-log-io"
   },
-  "engines" : {
-    "node" : ">=20.0.0"
+  "engines": {
+    "node": ">=20.0.0"
   },
   "node-red": {
     "version": ">=4.0.0",

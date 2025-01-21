@@ -89,7 +89,7 @@ Default log level: `debug`
 
 If message doesn't have its own logLevel, it will be assigned one as defined in logIO and always logged. In this case logIO doesn't act as a filter, but only attaches the selected logLevel to the log entry.
 
-Of course more common case is that you want to log you messages based on severity, so if the message contains _logIO_ object with key logLevel set to one of allowed levels, that one will be used for:
+Of course more common case is that you want to log you messages based on severity, so if the message contains _\_logIO\__ object with key logLevel set to one of allowed levels, that one will be used for:
 
 - displaying that log level in log entry
 - omitting the message from logs, if current message logLevel priority is lower than logIO log level priority
@@ -146,7 +146,7 @@ To activate logging, incoming message should have a _logIO_ object with key `act
 }
 ```
 
-To deactivate logging, incoming message should have a _logIO_ object with key `activate` set to `false`:
+To deactivate logging, incoming message should have a _\_logIO\__ object with key `activate` set to `false`:
 
 ```JSON
 {
@@ -166,7 +166,7 @@ Have in mind that those two actions are not the same and for example if you acti
 
 By default, logIO will log messages to file name specified in logger properties. But you can also define file name dynamically through incoming message.
 
-To do so, incoming message should have a _logIO_ object with key `fileName` set to the name of desired file.
+To do so, incoming message should have a _\_logIO\__ object with key `fileName` set to the name of desired file.
 
 ```JSON
 {
@@ -182,7 +182,7 @@ To do so, incoming message should have a _logIO_ object with key `fileName` set 
 
 By default, logIO will log messages to directory specified in logger properties. But you can also define directory dynamically through incoming message.
 
-To do so, incoming message should have a _logIO_ object with key `dirName` set to the directory name.
+To do so, incoming message should have a _\_logIO\__ object with key `dirName` set to the directory name.
 
 ```JSON
 {

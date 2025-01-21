@@ -73,7 +73,7 @@ module.exports = function (RED) {
       if (node.logIOScope.includes('O')) {
         RED.hooks.add(`onSend.msg-logIO-${node.id}`, (sendEvents) => {
           sendEvents.forEach((sendEvent) => {
-            if (node.observedNodeIds.has(sendEvent.source.node.id)) {
+            if (node.active && node.observedNodeIds.has(sendEvent.source.node.id)) {
               const message = RED.util.cloneMessage(sendEvent.msg);
               handleMsgEvent('OUTPUT', message, sendEvent.source.node.id);
             }
@@ -83,7 +83,7 @@ module.exports = function (RED) {
 
       if (node.logIOScope.includes('I')) {
         RED.hooks.add(`onReceive.msg-logIO-${node.id}`, (receiveEvent) => {
-          if (node.observedNodeIds.has(receiveEvent.destination.node.id)) {
+          if (node.active && node.observedNodeIds.has(receiveEvent.destination.node.id)) {
             const message = RED.util.cloneMessage(receiveEvent.msg);
             handleMsgEvent('INPUT', message, receiveEvent.destination.node.id);
           }
@@ -135,7 +135,7 @@ module.exports = function (RED) {
     function init() {
       node.logger = RED.nodes.getNode(config.logger);
 
-      if (!node.active || !node.logger) {
+      if (!node.logger) {
         setNodeStatus();
         return;
       }

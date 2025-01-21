@@ -1,0 +1,222 @@
+[
+    {
+        "id": "ece9b03d404b1452",
+        "type": "group",
+        "z": "77941ce499570f7a",
+        "style": {
+            "stroke": "#999999",
+            "stroke-opacity": "1",
+            "fill": "none",
+            "fill-opacity": "1",
+            "label": true,
+            "label-position": "nw",
+            "color": "#a4a4a4"
+        },
+        "nodes": [
+            "4cb8a551e17c4c33",
+            "5916435073d6a2aa",
+            "b256ddf3dd3f33dd",
+            "05508cf892f00614",
+            "818ac7738c38fd90",
+            "60ca9725318ef4db"
+        ],
+        "x": 34,
+        "y": 39,
+        "w": 852,
+        "h": 282
+    },
+    {
+        "id": "4cb8a551e17c4c33",
+        "type": "logIO",
+        "z": "77941ce499570f7a",
+        "g": "ece9b03d404b1452",
+        "name": "logIO 1",
+        "active": true,
+        "logger": "3726025fe67dcb07",
+        "complete": "payload",
+        "targetType": "msg",
+        "logIOMode": "inline",
+        "logIOScope": "IO",
+        "autoStart": true,
+        "scope": [],
+        "x": 780,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "5916435073d6a2aa",
+        "type": "inject",
+        "z": "77941ce499570f7a",
+        "g": "ece9b03d404b1452",
+        "name": "log messages without dynamic fileName to filleName defined in UI properties",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 350,
+        "y": 80,
+        "wires": [
+            [
+                "4cb8a551e17c4c33"
+            ]
+        ]
+    },
+    {
+        "id": "b256ddf3dd3f33dd",
+        "type": "inject",
+        "z": "77941ce499570f7a",
+        "g": "ece9b03d404b1452",
+        "name": "log error messages to fileName logs-%DATE%.error defined in incoming message",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "_logIO_",
+                "v": "{ \"fileName\": \"logIO-%DATE%.error\", \"logLevel\": \"error\" }",
+                "vt": "json"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 360,
+        "y": 160,
+        "wires": [
+            [
+                "4cb8a551e17c4c33"
+            ]
+        ]
+    },
+    {
+        "id": "05508cf892f00614",
+        "type": "inject",
+        "z": "77941ce499570f7a",
+        "g": "ece9b03d404b1452",
+        "name": "log warn messages to fileName logs-%DATE%.warn defined in incoming message",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "_logIO_",
+                "v": "{ \"fileName\": \"logIO-%DATE%.warn\", \"logLevel\": \"warn\" }",
+                "vt": "json"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 360,
+        "y": 200,
+        "wires": [
+            [
+                "4cb8a551e17c4c33"
+            ]
+        ]
+    },
+    {
+        "id": "818ac7738c38fd90",
+        "type": "inject",
+        "z": "77941ce499570f7a",
+        "g": "ece9b03d404b1452",
+        "name": "log info messages to fileName logs-%DATE%.info defined in incoming message",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "_logIO_",
+                "v": "{ \"fileName\": \"logIO-%DATE%.info\", \"logLevel\": \"info\" }",
+                "vt": "json"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 360,
+        "y": 240,
+        "wires": [
+            [
+                "4cb8a551e17c4c33"
+            ]
+        ]
+    },
+    {
+        "id": "60ca9725318ef4db",
+        "type": "inject",
+        "z": "77941ce499570f7a",
+        "g": "ece9b03d404b1452",
+        "name": "log debug messages to fileName logs-%DATE%.debug defined in incoming message",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "_logIO_",
+                "v": "{ \"fileName\": \"logIO-%DATE%.debug\", \"logLevel\": \"debug\" }",
+                "vt": "json"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 370,
+        "y": 280,
+        "wires": [
+            [
+                "4cb8a551e17c4c33"
+            ]
+        ]
+    },
+    {
+        "id": "3726025fe67dcb07",
+        "type": "logIO-logger",
+        "name": "loggerIO - file",
+        "logLevel": "debug",
+        "isTimestampUTC": false,
+        "logMeta": "none",
+        "logMetaOptions": "",
+        "logOutput": "file,nr-debugger",
+        "fileFileName": "logIO-%DATE%.log",
+        "fileDirName": "",
+        "fileDatePattern": "YYYY-MM-DD",
+        "fileIsJsonFormat": false,
+        "fileZippedArchive": false,
+        "fileMaxSize": "10",
+        "fileMaxSizeUnit": "m",
+        "fileMaxFiles": "",
+        "fileMaxFilesUnit": "",
+        "consoleIsJsonFormat": false,
+        "elkUrl": "http://localhost:9200",
+        "elkIndex": "node-red"
+    }
+]

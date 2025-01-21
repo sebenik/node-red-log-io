@@ -55,7 +55,12 @@ logIO currently supports following log outputs (multiple can be selected):
 - **Max file size** Maximum size of the file after which it will rotate. This can be defined in Bytes, KB, MB or GB.
 - **Files to keep** Maximum number of logs to keep. If not set, no logs will be removed. This can be either _number of files_ or _number of days_.
 
+
 ![file output](https://github.com/sebenik/node-red-log-io/blob/master/docs/images/output-file.png?raw=true)
+
+> [!WARNING]
+> Have in mind that if you delete of manually save the file that logIO is writing logs to, it might not be recreated. Watcher observing the file changes in not 100% reliable, thus avoid modifying/deleting files that are currently in use by logIO.
+>If you delete the active log file and it's not automatically recreated, you'll have to redeploy the flow.
 
 #### Node-Red debugger panel
 [no-additional-options]
@@ -123,7 +128,9 @@ This message will NOT be logged.
 }
 ```
 
-## Controlling the node logging
+## Dynamically controlling logIO node with incoming message
+
+### Activate or deactivate logIO
 
 By default, logIO will log messages of all connected or selected nodes from deploy onward.
 
@@ -152,4 +159,35 @@ To deactivate logging, incoming message should have a _logIO_ object with key `a
 You can also toggle the logging through components button same as in core *debug* component.
 Have in mind that those two actions are not the same and for example if you activated the logIO through incoming message but logIO is deactivated in editor, logging will still be paused.
 
-Log level and mode are also displayed in status of the component for easier visualization.
+
+### Specify fileName
+
+**Bellow applies if output is set to `File`.**
+
+By default, logIO will log messages to file name specified in logger properties. But you can also define file name dynamically through incoming message.
+
+To do so, incoming message should have a _logIO_ object with key `fileName` set to the name of desired file.
+
+```JSON
+{
+  "payload" : "your payload",
+  "topic": "your topic",
+  "_logIO_" : { "fileName": "logIO-%DATE%.error", logLevel: "error" }
+}
+```
+
+### Specify dirName
+
+**Bellow applies if output is set to `File`.**
+
+By default, logIO will log messages to directory specified in logger properties. But you can also define directory dynamically through incoming message.
+
+To do so, incoming message should have a _logIO_ object with key `dirName` set to the directory name.
+
+```JSON
+{
+  "payload" : "your payload",
+  "topic": "your topic",
+  "_logIO_" : { "dirName": "/var/log/node-red/errors", "fileName": "logIO-%DATE%.error", logLevel: "error" }
+}
+```

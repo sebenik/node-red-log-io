@@ -35,7 +35,7 @@ module.exports = function (RED) {
           return;
         }
 
-        const m = {};
+        const m = { _o: {} };
         if (node.logMeta !== 'none') {
           const lmAll = node.logMeta === 'all';
           m.meta = {
@@ -48,7 +48,10 @@ module.exports = function (RED) {
           }
         }
         if (node.logToNrDebugger) {
-          m._o = { sourceNode };
+          m._o.sourceNode = sourceNode;
+        }
+        if (msg._logIO_ && typeof msg._logIO_ === 'object') {
+          m._o._logIO_ = msg._logIO_;
         }
 
         let logLevel = msg?._logIO_?.logLevel || node.logger.config.logLevel;

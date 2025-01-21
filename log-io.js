@@ -14,6 +14,7 @@ module.exports = function (RED) {
     this.logToNrDebugger = false;
     this.config = config;
     this.logLevelOptions = ['error', 'warn', 'info', 'debug'];
+    this.setNodeStatus = setNodeStatus;
     this.logIOScope = this.logIOMode === 'inline'
       ? 'I'
       : (config.logIOScope || 'I');
@@ -203,4 +204,43 @@ module.exports = function (RED) {
   }
 
   RED.nodes.registerType('logIO', LogIONode);
+
+  RED.httpAdmin.post("/logIO/:state", RED.auth.needsPermission("debug.write"), function (req, res) {
+    const state = req.params.state;
+    const isSateEnable = state === 'enable';
+    if (state !== 'enable' && state !== 'disable') {
+      res.sendStatus(404);
+      return;
+    }
+    const nodes = req?.body?.nodes;
+    if (Array.isArray(nodes)) {
+      nodes.forEach(function(id) {
+        const node = RED.nodes.getNode(id);
+        if (node !== null && typeof node !== "undefined") {
+          node.active = isSateEnable;
+          node.setNodeStatus();
+        }
+      })
+      res.sendStatus(isSateEnable ? 200 : 201);
+    } else {
+      res.sendStatus(400);
+    }
+  });
+
+  RED.httpAdmin.post("/logIO/:id/:state", RED.auth.needsPermission("debug.write"), function (req, res) {
+    const state = req.params.state;
+    const isSateEnable = state === 'enable';
+    if (state !== 'enable' && state !== 'disable') {
+      res.sendStatus(404);
+      return;
+    }
+    const node = RED.nodes.getNode(req.params.id);
+    if (node !== null && typeof node !== "undefined") {
+      node.active = isSateEnable;
+      node.setNodeStatus();
+      res.sendStatus(isSateEnable ? 200 : 201);
+    } else {
+      res.sendStatus(404);
+    }
+  });
 }

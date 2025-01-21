@@ -4,10 +4,9 @@ module.exports = function(RED) {
     RED.nodes.createNode(this, config);
     const hash = require('object-hash');
     const wLogger = require('./lib/winstonLogger');
-    const primaryLogger = wLogger({ config, RED });
     const isFileOutput = config.logOutput.split(',').includes('file');
     const loggerInstances = new Map();
-
+    let primaryLogger = wLogger({ config, RED });
     this.config = config;
 
     this.log = (...args) => {
@@ -18,13 +17,14 @@ module.exports = function(RED) {
 
     this.close = (...args) => {
       primaryLogger.close(...args);
+      primaryLogger = null;
       loggerInstances.forEach((logger) => logger.close(...args));
       loggerInstances.clear();
     }
 
     function getLoggerInstance(config, options) {
       if (!options?._logIO_) {
-        return primaryLogger;
+        return primaryLogger || wLogger({ config, RED });
       }
       const dynamicConfiguration = options._logIO_;
       const cConfig = {

@@ -16,11 +16,11 @@
     var body;
 
     if (Array.isArray(node)) {
-      url = "debug/" + (active ? "enable" : "disable");
+      url = "logIO/" + (active ? "enable" : "disable");
       body = { nodes: node.map(function (n) { return n.id }) }
       node = node[0];
     } else {
-      url = "debug/" + node.id + "/" + (active ? "enable" : "disable");
+      url = "logIO/" + node.id + "/" + (active ? "enable" : "disable");
     }
     $.ajax({
       url: url,

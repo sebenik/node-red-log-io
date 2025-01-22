@@ -1,5 +1,12 @@
 const utils = require('./lib/utils');
 
+const logLevelStatusColors = new Map([
+  ['error', 'red'],
+  ['warn', 'yellow'],
+  ['info', 'green'],
+  ['debug', 'blue'],
+]);
+
 module.exports = function (RED) {
   function LogIONode(config) {
     RED.nodes.createNode(this, config);
@@ -15,6 +22,7 @@ module.exports = function (RED) {
     this.config = config;
     this.logLevelOptions = ['error', 'warn', 'info', 'debug'];
     this.setNodeStatus = setNodeStatus;
+    this.handleLoggerUpdate = handleLoggerUpdate;
     this.logIOScope = this.logIOMode === 'inline'
       ? 'I'
       : (config.logIOScope || 'I');
@@ -103,36 +111,37 @@ module.exports = function (RED) {
       setNodeStatus();
     }
 
+    function handleLoggerUpdate() {
+      setNodeStatus();
+    }
+
     function getNodeStatusFill(logLevel) {
-      let fill = 'gray';
+      if (node.logger?.isError) {
+        return 'red';
+      }
       if (!(node.active && node.isActivated)) {
-        return fill;
+        return 'gray';
       }
-      switch (logLevel) {
-        case 'error':
-          fill = 'red';
-          break;
-        case 'warn':
-          fill = 'yellow';
-          break;
-        case 'info':
-          fill = 'green';
-          break;
-        case 'debug':
-          fill = 'blue';
-          break;
-        default:
-          break;
+      return logLevelStatusColors.has(logLevel) ? logLevelStatusColors.get(logLevel) : 'gray';
+    }
+
+    function getNodeStatusShape() {
+      return node.logger?.isError ? 'dot' : 'ring';
+    }
+
+    function getNodeStatusText(logLevel) {
+      if (node.logger?.isError) {
+        return 'Logger error! Please check logs.';
       }
-      return fill;
+      return (node.active && node.isActivated) ? `Level: ${logLevel} | Mode: ${node.logIOMode}` : 'Logging paused';
     }
 
     function setNodeStatus() {
       const logLevel = node.logger?.config.logLevel;
       node.status({
         fill: getNodeStatusFill(logLevel),
-        shape: 'ring',
-        text: (node.active && node.isActivated) ? `Level: ${logLevel} | Mode: ${node.logIOMode}` : 'Logging paused',
+        shape: getNodeStatusShape(),
+        text: getNodeStatusText(logLevel),
       });
     }
 

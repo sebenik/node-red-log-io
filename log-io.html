@@ -41,7 +41,9 @@
 
   RED.nodes.registerType('logIO', {
     category: 'logging',
-    color: '#C0C0C0',
+    color: '#87A980',
+    align: 'right',
+    icon: 'logIO.svg',
     defaults: {
       name: { value: '_DEFAULT_' },
       active: { value: true },
@@ -62,8 +64,6 @@
     labelStyle: function () {
       return this.name ? "node_label_italic" : "";
     },
-    align: 'right',
-    icon: 'debug.svg',
     button: {
       toggle: "active",
       onclick: function () {

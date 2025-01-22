@@ -16,7 +16,7 @@ module.exports = function(RED) {
     }
 
     this.close = (...args) => {
-      primaryLogger.close(...args);
+      primaryLogger?.close(...args);
       primaryLogger = null;
       loggerInstances.forEach((logger) => logger.close(...args));
       loggerInstances.clear();

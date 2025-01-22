@@ -23,6 +23,7 @@ module.exports = function (RED) {
     this.logLevelOptions = ['error', 'warn', 'info', 'debug'];
     this.setNodeStatus = setNodeStatus;
     this.handleLoggerUpdate = handleLoggerUpdate;
+    this.getObservedNodeIds = getObservedNodeIds;
     this.logIOScope = this.logIOMode === 'inline'
       ? 'I'
       : (config.logIOScope || 'I');
@@ -39,7 +40,7 @@ module.exports = function (RED) {
         let message = node.config.targetType === 'full'
           ? msg
           : RED.util.getMessageProperty(msg, node.config.complete);
-        
+
         if (typeof message === 'undefined') {
           return;
         }
@@ -48,12 +49,12 @@ module.exports = function (RED) {
         if (node.logMeta !== 'none') {
           const lmAll = node.logMeta === 'all';
           m.meta = {
-            ...(lmAll || node.logMetaOptions.includes('_msgid')) && { _msgid: msg?._msgid }, 
-            ...(lmAll || node.logMetaOptions.includes('eventName')) && { eventName }, 
-            ...(lmAll || node.logMetaOptions.includes('loggerNodeId')) && { loggerNodeId: node.id }, 
-            ...(lmAll || node.logMetaOptions.includes('sourceNodeId')) && { sourceNodeId }, 
-            ...(lmAll || node.logMetaOptions.includes('sourceNodeName')) && { sourceNodeName: sourceNode.name }, 
-            ...(lmAll || node.logMetaOptions.includes('sourceNodeType')) && { sourceNodeType: sourceNode.type }, 
+            ...(lmAll || node.logMetaOptions.includes('_msgid')) && { _msgid: msg?._msgid },
+            ...(lmAll || node.logMetaOptions.includes('eventName')) && { eventName },
+            ...(lmAll || node.logMetaOptions.includes('loggerNodeId')) && { loggerNodeId: node.id },
+            ...(lmAll || node.logMetaOptions.includes('sourceNodeId')) && { sourceNodeId },
+            ...(lmAll || node.logMetaOptions.includes('sourceNodeName')) && { sourceNodeName: sourceNode.name },
+            ...(lmAll || node.logMetaOptions.includes('sourceNodeType')) && { sourceNodeType: sourceNode.type },
           }
         }
         if (node.logToNrDebugger) {
@@ -145,6 +146,23 @@ module.exports = function (RED) {
       });
     }
 
+    function getObservedNodeIds(logIOMode) {
+      switch (logIOMode) {
+        case 'inline':
+          return new Set([node.id]);
+        case 'wired':
+          return utils.getAllWiredNodes(RED, node);
+        case 'flow':
+          return new Set(Object.keys(node._flow.activeNodes));
+        case 'select':
+          return new Set(config.scope || []);
+        case 'all':
+          return utils.getAllNodes(RED);
+        default:
+          return new Set([]);
+      }
+    }
+
     function init() {
       node.logger = RED.nodes.getNode(config.logger);
 
@@ -156,35 +174,14 @@ module.exports = function (RED) {
       node.logMeta = node.logger.config.logMeta;
       node.logMetaOptions = node.logger.config.logMetaOptions.split(',');
       node.logToNrDebugger = node.logger.config.logOutput.split(',').includes('nr-debugger');
-
-      switch (node.logIOMode) {
-        case 'inline':
-          node.observedNodeIds = new Set([node.id]);
-          break;
-        case 'wired':
-          node.observedNodeIds = utils.getAllWiredNodes(RED, node);
-          break;
-        case 'flow':
-          node.observedNodeIds = new Set(Object.keys(node._flow.activeNodes));
-          break;
-        case 'select':
-          node.observedNodeIds = new Set(config.scope || []);
-          break;
-        case 'all':
-          node.observedNodeIds = utils.getAllNodes(RED);
-          break;
-      }
+      node.observedNodeIds = getObservedNodeIds(node.logIOMode);
 
       node.autoStart && activate();
       setNodeStatus();
     };
 
     node.on('input', function (msg) {
-      if (
-        !node.active ||
-        !msg._logIO_ ||
-        typeof msg._logIO_.activate !== "boolean")
-      {
+      if (!node.active || !msg._logIO_ || typeof msg._logIO_.activate !== "boolean") {
         return node.send(msg);
       }
 
@@ -223,7 +220,7 @@ module.exports = function (RED) {
     }
     const nodes = req?.body?.nodes;
     if (Array.isArray(nodes)) {
-      nodes.forEach(function(id) {
+      nodes.forEach(function (id) {
         const node = RED.nodes.getNode(id);
         if (node !== null && typeof node !== "undefined") {
           node.active = isSateEnable;
@@ -248,6 +245,16 @@ module.exports = function (RED) {
       node.active = isSateEnable;
       node.setNodeStatus();
       res.sendStatus(isSateEnable ? 200 : 201);
+    } else {
+      res.sendStatus(404);
+    }
+  });
+
+  RED.httpAdmin.get("/logIO-observed-nodes/:id/:mode", RED.auth.needsPermission("debug.write"), function (req, res) {
+    const logIOMode = req.params.mode;
+    const node = RED.nodes.getNode(req.params.id);
+    if (node !== null && typeof node !== "undefined") {
+      res.status(200).json({ nodes: Array.from(node.getObservedNodeIds(logIOMode)) });
     } else {
       res.sendStatus(404);
     }

@@ -1,4 +1,7 @@
 <script type="text/javascript">
+  let observedNodes = new Set([]);
+  let treeListSelectedNodes = new Set([]);
+  let treeListUnselectedNodes = new Set([]);
   const logIOModes = [
     { v: 'inline', t: 'Inline' },
     { v: 'wired', t: 'Wired' },
@@ -10,6 +13,60 @@
     { v: 'I', t: 'Log node INPUT' },
     { v: 'IO', t: 'Log node INPUT and OUTPUT' },
   ];
+
+  function cleanUpHighlight() {
+    unhighlightObservedNodes();
+    observedNodes.clear();
+    treeListSelectedNodes.clear();
+    treeListUnselectedNodes.clear();
+  }
+
+  function unhighlightObservedNodes() {
+    observedNodes.forEach((n) => {
+      n.highlighted = false;
+      n.dirty = true;
+    });
+    treeListSelectedNodes.forEach((n) => {
+      n.highlighted = false;
+      n.dirty = true;
+    });
+    treeListUnselectedNodes.forEach((n) => {
+      n.highlighted = false;
+      n.dirty = true;
+    });
+    RED.view.redraw();
+  }
+
+  function highlightTreeLisNodes() {
+    treeListSelectedNodes.forEach((n) => {
+      n.highlighted = true;
+      n.dirty = true;
+    });
+    treeListUnselectedNodes.forEach((n) => {
+      n.highlighted = false;
+      n.dirty = true;
+    });
+    RED.view.redraw();
+  }
+
+  function highlightObservedNodes(node, logIOMode, cb) {
+    $.ajax({
+      url: `logIO-observed-nodes/${node.id}/${logIOMode}`,
+      type: 'GET',
+      success: function (resp, textStatus, xhr) {
+        observedNodes.clear();
+        resp.nodes.forEach((nodeId) => {
+          let n = RED.nodes.node(nodeId);
+          n.highlighted = true;
+          n.dirty = true;
+          observedNodes.add(n);
+        });
+        RED.view.redraw();
+        cb && cb();
+      },
+      error: unhighlightObservedNodes,
+    });
+  }
 
   function activateAjaxCall(node, active, successCallback) {
     var url;
@@ -105,6 +162,8 @@
     oneditprepare: function() {
       const node = this;
 
+      highlightObservedNodes(node, node.logIOMode);
+
       $("#node-input-typed-complete").typedInput({
         default: 'msg',
         types: ['msg', {
@@ -140,23 +199,28 @@
       );
 
       $("#node-input-logIOMode").change(function () {
+        unhighlightObservedNodes();
         switch (this.value) {
           case "inline":
             $(".node-input-target-row").hide();
             $("#node-input-logIOScope-row").hide();
+            highlightObservedNodes(node, this.value);
             break;
           case "wired":
           case "all":
           case "flow":
             $(".node-input-target-row").hide();
             $("#node-input-logIOScope-row").show();
+            highlightObservedNodes(node, this.value);
             break;
           case "select":
             $(".node-input-target-row").show();
             $("#node-input-logIOScope-row").show();
+            highlightObservedNodes(node, this.value, highlightTreeLisNodes);
             break;
         }
       });
+
       $("#node-input-logIOMode").val(node.logIOMode);
       $("#node-input-logIOScope").val(node.logIOScope);
 
@@ -198,6 +262,23 @@
           item.node.dirty = true;
           RED.view.redraw();
         })
+      dirList.on('mouseenter', function() {
+        unhighlightObservedNodes();
+      });
+      dirList.on('mouseleave', function() {
+        highlightObservedNodes(node, $("#node-input-logIOMode").val(), highlightTreeLisNodes);
+      });
+      dirList.on("treelistselect", function (e, item) {
+        if (!item.node) { return; }
+        if (item.selected) {
+          treeListSelectedNodes.add(item.node);
+          treeListUnselectedNodes.delete(item.node);
+        } else {
+          treeListUnselectedNodes.add(item.node);
+          treeListSelectedNodes.delete(item.node);
+        }
+      });
+
       var candidateNodes = RED.nodes.filterNodes({ z: node.z });
       var allChecked = true;
       var items = [];
@@ -290,7 +371,7 @@
       /* END: copied from NR Catch node */
     },
 
-    oneditsave: function () {
+    oneditsave: function() {
       const type = $('#node-input-typed-complete').typedInput('type');
       if (type === 'full') {
         $("#node-input-complete").val("true");
@@ -299,6 +380,12 @@
       }
 
       this.scope = $("#node-input-catch-target-container-div").treeList('selected').map(function (i) { return i.node.id })
+
+      cleanUpHighlight();
+    },
+
+    oneditcancel: function() {
+      cleanUpHighlight();
     },
 
     oneditresize: function (size) {

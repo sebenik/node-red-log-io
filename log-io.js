@@ -11,6 +11,7 @@ module.exports = function (RED) {
   function LogIONode(config) {
     RED.nodes.createNode(this, config);
 
+    this.numOfLoggedMessages = 0;
     this.autoStart = config.autoStart;
     this.logIOMode = config.logIOMode;
     this.active = config.active;
@@ -21,9 +22,6 @@ module.exports = function (RED) {
     this.logToNrDebugger = false;
     this.config = config;
     this.logLevelOptions = ['error', 'warn', 'info', 'debug'];
-    this.setNodeStatus = setNodeStatus;
-    this.handleLoggerUpdate = handleLoggerUpdate;
-    this.getObservedNodeIds = getObservedNodeIds;
     this.logIOScope = this.logIOMode === 'inline'
       ? 'I'
       : (config.logIOScope || 'I');
@@ -73,6 +71,9 @@ module.exports = function (RED) {
         }
 
         node.logger.log(logLevel, message, m);
+
+        node.numOfLoggedMessages++;
+        node.setNodeStatus();
       } catch (err) {
         const errMsg = `[logIO] Unexpected error while logging messages: ${err}`;
         node.warn(errMsg)
@@ -103,17 +104,13 @@ module.exports = function (RED) {
         });
       }
 
-      setNodeStatus();
+      node.setNodeStatus();
     }
 
     function deactivate() {
       node.isActivated = false;
       RED.hooks.remove(`*.msg-logIO-${node.id}`);
-      setNodeStatus();
-    }
-
-    function handleLoggerUpdate() {
-      setNodeStatus();
+      node.setNodeStatus();
     }
 
     function getNodeStatusFill(logLevel) {
@@ -134,10 +131,29 @@ module.exports = function (RED) {
       if (node.logger?.isError) {
         return 'Logger error! Please check logs.';
       }
-      return (node.active && node.isActivated) ? `Level: ${logLevel} | Mode: ${node.logIOMode}` : 'Logging paused';
+      return (node.active && node.isActivated)
+        ? `Level: ${logLevel} | Mode: ${node.logIOMode} | #: ${node.numOfLoggedMessages}`
+        : 'Logging paused';
     }
 
-    function setNodeStatus() {
+    function init() {
+      node.logger = RED.nodes.getNode(config.logger);
+
+      if (!node.logger) {
+        node.setNodeStatus();
+        return;
+      }
+
+      node.logMeta = node.logger.config.logMeta;
+      node.logMetaOptions = node.logger.config.logMetaOptions.split(',');
+      node.logToNrDebugger = node.logger.config.logOutput.split(',').includes('nr-debugger');
+      node.observedNodeIds = node.getObservedNodeIds(node.logIOMode);
+
+      node.autoStart && activate();
+      node.setNodeStatus();
+    };
+
+    node.setNodeStatus = function() {
       const logLevel = node.logger?.config.logLevel;
       node.status({
         fill: getNodeStatusFill(logLevel),
@@ -146,7 +162,11 @@ module.exports = function (RED) {
       });
     }
 
-    function getObservedNodeIds(logIOMode) {
+    node.handleLoggerUpdate = function() {
+      node.setNodeStatus();
+    }
+
+    node.getObservedNodeIds = function(logIOMode) {
       switch (logIOMode) {
         case 'inline':
           return new Set([node.id]);
@@ -162,23 +182,6 @@ module.exports = function (RED) {
           return new Set([]);
       }
     }
-
-    function init() {
-      node.logger = RED.nodes.getNode(config.logger);
-
-      if (!node.logger) {
-        setNodeStatus();
-        return;
-      }
-
-      node.logMeta = node.logger.config.logMeta;
-      node.logMetaOptions = node.logger.config.logMetaOptions.split(',');
-      node.logToNrDebugger = node.logger.config.logOutput.split(',').includes('nr-debugger');
-      node.observedNodeIds = getObservedNodeIds(node.logIOMode);
-
-      node.autoStart && activate();
-      setNodeStatus();
-    };
 
     node.on('input', function (msg) {
       if (!node.active || !msg._logIO_ || typeof msg._logIO_.activate !== "boolean") {

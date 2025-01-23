@@ -8,10 +8,10 @@ module.exports = function(RED) {
     const loggerInstances = new Map();
     const node = this;
     let primaryLogger;
-    this.config = config;
-    this.isError = false;
+    node.config = config;
+    node.isError = false;
 
-    this.log = (...args) => {
+    node.log = (...args) => {
       if (node.isError) {
         node.isError = false;
         node.handleLoggerUpdate();
@@ -21,14 +21,14 @@ module.exports = function(RED) {
       return logger.log(...args);
     }
 
-    this.close = (...args) => {
+    node.close = (...args) => {
       primaryLogger?.close(...args);
       primaryLogger = null;
       loggerInstances.forEach((logger) => logger.close(...args));
       loggerInstances.clear();
     }
 
-    this.handleLoggerUpdate =({ setError = false } = {}) => {
+    node.handleLoggerUpdate =({ setError = false } = {}) => {
       node.isError = setError;
       const nodesUsingThisLogger = node.config?._users || [];
       nodesUsingThisLogger.forEach((node) => {
@@ -38,7 +38,8 @@ module.exports = function(RED) {
 
     function getLoggerInstance(config, options) {
       if (!options?._logIO_) {
-        return primaryLogger || wLogger({ config, RED, node });
+        primaryLogger = primaryLogger || wLogger({ config, RED, node });
+        return primaryLogger;
       }
       const dynamicConfiguration = options._logIO_;
       const cConfig = {

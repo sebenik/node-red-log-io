@@ -75,7 +75,6 @@
     if (Array.isArray(node)) {
       url = "logIO/" + (active ? "enable" : "disable");
       body = { nodes: node.map(function (n) { return n.id }) }
-      node = node[0];
     } else {
       url = "logIO/" + node.id + "/" + (active ? "enable" : "disable");
     }

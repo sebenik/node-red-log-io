@@ -1,6 +1,6 @@
 {
   "name": "@zigasebenik/node-red-log-io",
-  "version": "1.1.5",
+  "version": "1.1.6",
   "description": "A Node-RED node to log input and output messages to various outputs.",
   "dependencies": {
     "@zigasebenik/winston-daily-rotate-file": "^5.0.3",

@@ -1,4 +1,5 @@
 const utils = require('./lib/utils');
+const DefaultLogger = require('./lib/defaultLogger');
 
 const logLevelStatusColors = new Map([
   ['error', 'red'],
@@ -137,7 +138,9 @@ module.exports = function (RED) {
     }
 
     function init() {
-      node.logger = RED.nodes.getNode(config.logger);
+      node.logger = config.logger
+        ? RED.nodes.getNode(config.logger)
+        : new DefaultLogger(RED);
 
       if (!node.logger) {
         node.setNodeStatus();

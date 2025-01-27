@@ -103,8 +103,8 @@
     defaults: {
       name: { value: '_DEFAULT_' },
       active: { value: true },
-      logger: { value: '', type: 'logIO-logger' },
-      complete: { value: 'false', required: true },
+      logger: { value: '', type: 'logIO-logger', required: false },
+      complete: { value: 'payload', required: true },
       targetType: { value: undefined },
       logIOMode: { value: 'inline' },
       logIOScope: { value: 'I' },
@@ -115,7 +115,7 @@
     outputs: 0,
     label: function() {
       let mode = logIOModes.find((m) => m.v === this.logIOMode);
-      return this.name || mode?.v || "logIO";
+      return `${this.name || mode?.v || "logIO"}${this.logger ? '' : ' ⌑'}`;
     },
     labelStyle: function () {
       return this.name ? "node_label_italic" : "";

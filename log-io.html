@@ -1,7 +1,7 @@
 <script type="text/javascript">
-  let observedNodes = new Set([]);
-  let treeListSelectedNodes = new Set([]);
-  let treeListUnselectedNodes = new Set([]);
+  let observedNodes = new Set();
+  let treeListSelectedNodes = new Set();
+  let treeListUnselectedNodes = new Set();
   const logIOModes = [
     { v: 'inline', t: 'Inline' },
     { v: 'wired', t: 'Wired' },
@@ -14,6 +14,22 @@
     { v: 'IO', t: 'Log node INPUT and OUTPUT' },
   ];
 
+  function highlightNodes(nodes) {
+    nodes.forEach((n) => {
+      n.highlighted = true;
+      n.dirty = true;
+    });
+    RED.view.redraw();
+  }
+
+  function unhighlightNodes(nodes) {
+    nodes.forEach((n) => {
+      n.highlighted = false;
+      n.dirty = true;
+    });
+    RED.view.redraw();
+  }
+
   function cleanUpHighlight() {
     unhighlightObservedNodes();
     observedNodes.clear();
@@ -22,31 +38,14 @@
   }
 
   function unhighlightObservedNodes() {
-    observedNodes.forEach((n) => {
-      n.highlighted = false;
-      n.dirty = true;
-    });
-    treeListSelectedNodes.forEach((n) => {
-      n.highlighted = false;
-      n.dirty = true;
-    });
-    treeListUnselectedNodes.forEach((n) => {
-      n.highlighted = false;
-      n.dirty = true;
-    });
-    RED.view.redraw();
+    unhighlightNodes(observedNodes);
+    unhighlightNodes(treeListSelectedNodes);
+    unhighlightNodes(treeListUnselectedNodes);
   }
 
   function highlightTreeLisNodes() {
-    treeListSelectedNodes.forEach((n) => {
-      n.highlighted = true;
-      n.dirty = true;
-    });
-    treeListUnselectedNodes.forEach((n) => {
-      n.highlighted = false;
-      n.dirty = true;
-    });
-    RED.view.redraw();
+    highlightNodes(treeListSelectedNodes);
+    unhighlightNodes(treeListUnselectedNodes);
   }
 
   function highlightObservedNodes(node, logIOMode, cb) {
@@ -57,11 +56,9 @@
         observedNodes.clear();
         resp.nodes.forEach((nodeId) => {
           let n = RED.nodes.node(nodeId);
-          n.highlighted = true;
-          n.dirty = true;
-          observedNodes.add(n);
+          n && observedNodes.add(n);
         });
-        RED.view.redraw();
+        highlightNodes(observedNodes);
         cb && cb();
       },
       error: unhighlightObservedNodes,
@@ -115,7 +112,8 @@
     outputs: 0,
     label: function() {
       let mode = logIOModes.find((m) => m.v === this.logIOMode);
-      return `${this.name || mode?.v || "logIO"}${this.logger ? '' : ' ⌑'}`;
+      const loggerNode = RED.nodes.node(this.logger);
+      return `${this.name || mode?.v || "logIO"} | ${loggerNode ? loggerNode.name : '⌑'}`;
     },
     labelStyle: function () {
       return this.name ? "node_label_italic" : "";
@@ -229,8 +227,8 @@
       this._resize = function () {
         var rows = $("#dialog-form>div:not(.node-input-target-list-row)");
         var height = $("#dialog-form").height();
-        for (var i = 0; i < rows.length; i++) {
-          height -= $(rows[i]).outerHeight(true);
+        for (const row of rows) {
+          height -= $(row).outerHeight(true);
         }
         var editorRow = $("#dialog-form>div.node-input-target-list-row");
         editorRow.css("height", height + "px");
@@ -253,13 +251,9 @@
       });
       var dirList = $("#node-input-catch-target-container-div").css({ width: "100%", height: "100%" })
         .treeList({ multi: true }).on("treelistitemmouseover", function (e, item) {
-          item.node.highlighted = true;
-          item.node.dirty = true;
-          RED.view.redraw();
+          highlightNodes(new Set([item.node]));
         }).on("treelistitemmouseout", function (e, item) {
-          item.node.highlighted = false;
-          item.node.dirty = true;
-          RED.view.redraw();
+          unhighlightNodes(new Set([item.node]));
         })
       dirList.on('mouseenter', function() {
         unhighlightObservedNodes();
@@ -309,8 +303,8 @@
         }
         nodeItemMap[n.id] = {
           node: n,
-          label: label,
-          sublabel: sublabel,
+          label,
+          sublabel,
           selected: isChecked,
           checkbox: true
         };
@@ -383,13 +377,10 @@
       cleanUpHighlight();
     },
 
-    oneditcancel: function() {
-      cleanUpHighlight();
-    },
-
-    oneditresize: function (size) {
+    oneditcancel: cleanUpHighlight,
+    oneditresize: function() {
       this._resize();
-    }
+    },
   });
   </script>
 

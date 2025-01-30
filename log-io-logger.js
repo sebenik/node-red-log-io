@@ -56,7 +56,6 @@ module.exports = function(RED) {
       loggerInstances.set(loggerKey, logger);
       return logger;
     }
-
   }
 
   RED.nodes.registerType("logIO-logger", LogIOLoggerNode, {

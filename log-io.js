@@ -1,12 +1,5 @@
-const utils = require('./lib/utils');
+const { getAllNodes, getAllWiredNodes, logLevelStatusColors } = require('./lib/utils');
 const DefaultLogger = require('./lib/defaultLogger');
-
-const logLevelStatusColors = new Map([
-  ['error', 'red'],
-  ['warn', 'yellow'],
-  ['info', 'green'],
-  ['debug', 'blue'],
-]);
 
 module.exports = function (RED) {
   function LogIONode(config) {
@@ -29,49 +22,52 @@ module.exports = function (RED) {
 
     const node = this;
 
+    function getAdditionalMessageData(eventName, msg, sourceNode) {
+      const m = {};
+      const lmAll = node.logMeta === 'all';
+      if (node.logMeta !== 'none') {
+        m.meta = {
+          ...(lmAll || node.logMetaOptions.includes('_msgid')) && { _msgid: msg?._msgid },
+          ...(lmAll || node.logMetaOptions.includes('eventName')) && { eventName },
+          ...(lmAll || node.logMetaOptions.includes('loggerNodeId')) && { loggerNodeId: node.id },
+          ...(lmAll || node.logMetaOptions.includes('sourceNodeId')) && { sourceNodeId: sourceNode.id },
+          ...(lmAll || node.logMetaOptions.includes('sourceNodeName')) && { sourceNodeName: sourceNode.name },
+          ...(lmAll || node.logMetaOptions.includes('sourceNodeType')) && { sourceNodeType: sourceNode.type },
+        }
+      }
+      m._o = {
+        ...(node.logToNrDebugger) && { sourceNode },
+        ...(msg._logIO_ && typeof msg._logIO_ === 'object') && { _logIO_: msg._logIO_ },
+      }
+      return m;
+    }
+
     function handleMsgEvent(eventName, msg, sourceNodeId) {
       try {
         const sourceNode = RED.nodes.getNode(sourceNodeId);
-        if (sourceNode.type === 'logIO' && sourceNode.id !== node.id) {
+        if (!sourceNode || (sourceNode.type === 'logIO' && sourceNode.id !== node.id)) {
           return;
         }
 
-        let message = node.config.targetType === 'full'
-          ? msg
-          : RED.util.getMessageProperty(msg, node.config.complete);
+        const message = node.config.targetType !== 'full'
+          ? RED.util.getMessageProperty(msg, node.config.complete)
+          : msg;
 
-        if (typeof message === 'undefined') {
-          return;
-        }
+        if (typeof message === 'undefined') { return; }
 
-        const m = { _o: {} };
-        if (node.logMeta !== 'none') {
-          const lmAll = node.logMeta === 'all';
-          m.meta = {
-            ...(lmAll || node.logMetaOptions.includes('_msgid')) && { _msgid: msg?._msgid },
-            ...(lmAll || node.logMetaOptions.includes('eventName')) && { eventName },
-            ...(lmAll || node.logMetaOptions.includes('loggerNodeId')) && { loggerNodeId: node.id },
-            ...(lmAll || node.logMetaOptions.includes('sourceNodeId')) && { sourceNodeId },
-            ...(lmAll || node.logMetaOptions.includes('sourceNodeName')) && { sourceNodeName: sourceNode.name },
-            ...(lmAll || node.logMetaOptions.includes('sourceNodeType')) && { sourceNodeType: sourceNode.type },
+        let logLevel = node.logger.config.logLevel;
+        const msgLogLevel = msg?._logIO_?.logLevel;
+        if (msgLogLevel) {
+          if (!node.logLevelOptions.includes(msgLogLevel)) {
+            const warnMsg = `[logIO] logLevel '${msgLogLevel}' is not valid, replacing it with '${logLevel}'.`;
+            node.warn(warnMsg)
+            console.warn(warnMsg);
+          } else {
+            logLevel = msgLogLevel;
           }
         }
-        if (node.logToNrDebugger) {
-          m._o.sourceNode = sourceNode;
-        }
-        if (msg._logIO_ && typeof msg._logIO_ === 'object') {
-          m._o._logIO_ = msg._logIO_;
-        }
 
-        let logLevel = msg?._logIO_?.logLevel || node.logger.config.logLevel;
-        if (!node.logLevelOptions.includes(logLevel)) {
-          const warnMsg = `[logIO] logLevel '${logLevel}' is not valid, replacing it with 'debug'.`;
-          node.warn(warnMsg)
-          console.warn(warnMsg);
-          logLevel = 'debug';
-        }
-
-        node.logger.log(logLevel, message, m);
+        node.logger.log(logLevel, message, getAdditionalMessageData(eventName, msg, sourceNode));
 
         node.numOfLoggedMessages++;
         node.setNodeStatus();
@@ -82,27 +78,31 @@ module.exports = function (RED) {
       }
     }
 
+    function handleOutputEvent(sendEvents) {
+      sendEvents.forEach((sendEvent) => {
+        if (node.active && node.observedNodeIds.has(sendEvent.source.node.id)) {
+          const message = RED.util.cloneMessage(sendEvent.msg);
+          handleMsgEvent('OUTPUT', message, sendEvent.source.node.id);
+        }
+      });
+    }
+
+    function handleInputEvent(receiveEvent) {
+      if (node.active && node.observedNodeIds.has(receiveEvent.destination.node.id)) {
+        const message = RED.util.cloneMessage(receiveEvent.msg);
+        handleMsgEvent('INPUT', message, receiveEvent.destination.node.id);
+      }
+    }
+
     function activate() {
       node.isActivated = true;
 
       if (node.logIOScope.includes('O')) {
-        RED.hooks.add(`onSend.msg-logIO-${node.id}`, (sendEvents) => {
-          sendEvents.forEach((sendEvent) => {
-            if (node.active && node.observedNodeIds.has(sendEvent.source.node.id)) {
-              const message = RED.util.cloneMessage(sendEvent.msg);
-              handleMsgEvent('OUTPUT', message, sendEvent.source.node.id);
-            }
-          });
-        });
+        RED.hooks.add(`onSend.msg-logIO-${node.id}`, handleOutputEvent);
       }
 
       if (node.logIOScope.includes('I')) {
-        RED.hooks.add(`onReceive.msg-logIO-${node.id}`, (receiveEvent) => {
-          if (node.active && node.observedNodeIds.has(receiveEvent.destination.node.id)) {
-            const message = RED.util.cloneMessage(receiveEvent.msg);
-            handleMsgEvent('INPUT', message, receiveEvent.destination.node.id);
-          }
-        });
+        RED.hooks.add(`onReceive.msg-logIO-${node.id}`, handleInputEvent);
       }
 
       node.setNodeStatus();
@@ -121,7 +121,7 @@ module.exports = function (RED) {
       if (!(node.active && node.isActivated)) {
         return 'gray';
       }
-      return logLevelStatusColors.has(logLevel) ? logLevelStatusColors.get(logLevel) : 'gray';
+      return logLevelStatusColors.get(logLevel) || 'gray';
     }
 
     function getNodeStatusShape() {
@@ -138,13 +138,9 @@ module.exports = function (RED) {
     }
 
     function init() {
-      node.logger = config.logger
-        ? RED.nodes.getNode(config.logger)
-        : new DefaultLogger(RED);
-
+      node.logger = RED.nodes.getNode(config.logger);
       if (!node.logger) {
-        node.setNodeStatus();
-        return;
+        node.logger = new DefaultLogger(RED);
       }
 
       node.logMeta = node.logger.config.logMeta;
@@ -174,13 +170,13 @@ module.exports = function (RED) {
         case 'inline':
           return new Set([node.id]);
         case 'wired':
-          return utils.getAllWiredNodes(RED, node);
+          return getAllWiredNodes(RED, node);
         case 'flow':
           return new Set(Object.keys(node._flow.activeNodes));
         case 'select':
           return new Set(config.scope || []);
         case 'all':
-          return utils.getAllNodes(RED);
+          return getAllNodes(RED);
         default:
           return new Set([]);
       }
@@ -191,17 +187,15 @@ module.exports = function (RED) {
         return node.send(msg);
       }
 
-      if (msg._logIO_.activate) {
-        if (node.isActivated) {
-          node.warn('[logIO] logging is already active')
-        } else {
-          handleMsgEvent('INPUT', msg, node.id);
-          activate();
-        }
+      if (msg._logIO_.activate && !node.isActivated) {
+        handleMsgEvent('INPUT', msg, node.id);
+        activate();
+      } else if (!msg._logIO_.activate && node.isActivated) {
+        deactivate();
+      } else if (msg._logIO_.activate && node.isActivated) {
+        node.warn('[logIO] logging is already active')
       } else {
-        node.isActivated
-          ? deactivate()
-          : node.warn('[logIO] logging is not active');
+         node.warn('[logIO] logging is not active');
       }
 
       node.send(msg);
@@ -220,49 +214,36 @@ module.exports = function (RED) {
   RED.httpAdmin.post("/logIO/:state", RED.auth.needsPermission("debug.write"), function (req, res) {
     const state = req.params.state;
     const isSateEnable = state === 'enable';
-    if (state !== 'enable' && state !== 'disable') {
+    const nodes = req?.body?.nodes;
+    if (!['enable', 'disable'].includes(state) || !Array.isArray(nodes)) {
       res.sendStatus(404);
       return;
     }
-    const nodes = req?.body?.nodes;
-    if (Array.isArray(nodes)) {
-      nodes.forEach(function (id) {
-        const node = RED.nodes.getNode(id);
-        if (node !== null && typeof node !== "undefined") {
-          node.active = isSateEnable;
-          node.setNodeStatus();
-        }
-      })
-      res.sendStatus(isSateEnable ? 200 : 201);
-    } else {
-      res.sendStatus(400);
-    }
+    nodes.forEach(function (id) {
+      const node = RED.nodes.getNode(id);
+      if (!node) { return; }
+      node.active = isSateEnable;
+      node.setNodeStatus();
+    })
+    res.sendStatus(isSateEnable ? 200 : 201);
   });
 
   RED.httpAdmin.post("/logIO/:id/:state", RED.auth.needsPermission("debug.write"), function (req, res) {
     const state = req.params.state;
-    const isSateEnable = state === 'enable';
-    if (state !== 'enable' && state !== 'disable') {
-      res.sendStatus(404);
-      return;
-    }
     const node = RED.nodes.getNode(req.params.id);
-    if (node !== null && typeof node !== "undefined") {
-      node.active = isSateEnable;
-      node.setNodeStatus();
-      res.sendStatus(isSateEnable ? 200 : 201);
-    } else {
-      res.sendStatus(404);
+    if (!['enable', 'disable'].includes(state) || !node) {
+      return res.sendStatus(404);
     }
+    const isSateEnable = state === 'enable';
+    node.active = isSateEnable;
+    node.setNodeStatus();
+    res.sendStatus(isSateEnable ? 200 : 201);
   });
 
-  RED.httpAdmin.get("/logIO-observed-nodes/:id/:mode", RED.auth.needsPermission("debug.write"), function (req, res) {
+  RED.httpAdmin.get("/logIO-observed-nodes/:id/:mode", function (req, res) {
     const logIOMode = req.params.mode;
     const node = RED.nodes.getNode(req.params.id);
-    if (node !== null && typeof node !== "undefined") {
-      res.status(200).json({ nodes: Array.from(node.getObservedNodeIds(logIOMode)) });
-    } else {
-      res.sendStatus(404);
-    }
+    if (!node) { return res.sendStatus(404); }
+    res.status(200).json({ nodes: Array.from(node.getObservedNodeIds(logIOMode)) });
   });
 }

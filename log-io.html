@@ -1,4 +1,6 @@
 <script type="text/javascript">
+  const buttonClass = 'node-button-logIO';
+  const nodeClass = 'node-logIO';
   let observedNodes = new Set();
   let treeListSelectedNodes = new Set();
   let treeListUnselectedNodes = new Set();
@@ -13,6 +15,35 @@
     { v: 'I', t: 'Log node INPUT' },
     { v: 'IO', t: 'Log node INPUT and OUTPUT' },
   ];
+
+  appendCustomCss();
+  RED.events.on('workspace:change', assignClassToElements);
+
+  function appendCustomCss() {
+    const css = `
+    .${buttonClass} { transform: scale(0.93) translate(0, -10px); transition: transform .3s ease-out; }
+    .${buttonClass}:has(+ .${nodeClass}:hover), .${buttonClass}:hover { transform: scale(0.93) translate(0, -25px); }`;
+    const head = document.head || document.getElementsByTagName('head')[0];
+    const style = document.createElement('style');
+    style.type = 'text/css';
+    style.appendChild(document.createTextNode(css));
+    head.appendChild(style);
+  }
+
+  function assignClassToElements() {
+    setTimeout(() => {
+      $('.red-ui-flow-node-button').each((index, button) => {
+        if (button.__data__?.type === 'logIO') {
+          button.classList.add(buttonClass);
+        }
+      });
+      $('rect.red-ui-flow-node').each((index, node) => {
+        if (node.__data__?.type === 'logIO') {
+          node.classList.add(nodeClass);
+        }
+      });
+    });
+  }
 
   function highlightNodes(nodes) {
     nodes.forEach((n) => {
@@ -95,7 +126,7 @@
   RED.nodes.registerType('logIO', {
     category: 'logging',
     color: '#87A980',
-    align: 'right',
+    align: 'left',
     icon: 'logIO.svg',
     defaults: {
       name: { value: '_DEFAULT_' },
@@ -109,11 +140,10 @@
       scope: { value: null, type: '*[]' },
     },
     inputs: 1,
-    outputs: 0,
+    outputs: 1,
     label: function() {
-      let mode = logIOModes.find((m) => m.v === this.logIOMode);
       const loggerNode = RED.nodes.node(this.logger);
-      return `${this.name || mode?.v || "logIO"} | ${loggerNode ? loggerNode.name : '⌑'}`;
+      return `${this.name ? this.name + ' | ' : ''}${loggerNode ? loggerNode.name : '⌑'}`;
     },
     labelStyle: function () {
       return this.name ? "node_label_italic" : "";
@@ -150,6 +180,7 @@
     },
 
     onadd: function() {
+      assignClassToElements();
       if (this.name === '_DEFAULT_') {
         this.name = '';
         RED.actions.invoke("core:generate-node-names", this, { generateHistory: false });

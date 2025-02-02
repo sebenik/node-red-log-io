@@ -3,6 +3,7 @@
 logIO is a custom Node-Red node to enhance node logging, tracing, debugging and timing.
 
 As the name suggests, logIO node logs INPUT and OUTPUT messages from nodes. Contrary to other nodes out there, you don't have to wire each and every node you want to log directly to logIO, but you can also use it similar to core _catch_ or _status_ components. Of course you can use it also as core _debug_ component with additional improvement here too.
+logIO also has an output node, so you can use it in the middle of the flow as it leaves incoming messages intact and just passes them through.
 
 ## LogIO properties
 
@@ -48,7 +49,7 @@ logIO currently supports following log outputs (multiple can be selected):
 ![file options](https://github.com/sebenik/node-red-log-io/blob/master/docs/images/file-options.png?raw=true)
 
 - **File name**: Name of the lof file. You can add `%DATE%` placeholder, that will be replaced by date pattern specified by **File date pattern**
-**File date pattern**: A string representing the [moment.js date format](http://momentjs.com/docs/#/displaying/format/) to be used for rotating. For example, if your datePattern is simply 'HH' you will end up with 24 log files that are picked up and appended to every day. (default: 'YYYY-MM-DD')
+- **File date pattern**: A string representing the [moment.js date format](http://momentjs.com/docs/#/displaying/format/) to be used for rotating. For example, if your datePattern is simply 'HH' you will end up with 24 log files that are picked up and appended to every day. (default: 'YYYY-MM-DD')
 - **Directory**: The directory name to save log files to. If empty, logs will be saved to node-red root directory.
 - **JSON**: whether or not to format logs in JSON format
 - **Compress**: whether or not to gzip archived log files

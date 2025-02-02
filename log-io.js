@@ -195,7 +195,7 @@ module.exports = function (RED) {
       } else if (msg._logIO_.activate && node.isActivated) {
         node.warn('[logIO] logging is already active')
       } else {
-         node.warn('[logIO] logging is not active');
+        node.warn('[logIO] logging is not active');
       }
 
       node.send(msg);

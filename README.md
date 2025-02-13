@@ -13,7 +13,7 @@ logIO also has an output node, so you can use it in the middle of the flow as it
 - **Logger**: add custom logger configuration
 - **Output:** select to either log whole or part of the message
 - **Autostart**: whether or not to start logging by default. If unselected, logging will be paused and can be enabled through incoming message.
-- **Mode:** select one of the available modes (inline, wired, flow, select, all)
+- **Mode:** select one of the available modes (inline, wired, group, flow, select, all)
 - **Scope:** select to log either only INPUT or both INPUT and OUTPUT messages _(in inline mode only input messages can be logged)_
 
 ### Log Modes
@@ -23,7 +23,9 @@ logIO supports different modes, where in each, different nodes can be manually o
 - **`inline` [default] mode**
 In this mode, logIO behaves same as core _debug_ node, where you can pipe other nodes into logIO and input messages will be logged to desired output.
 - **`wired` mode**
-In this mode, logIO logs messages of nodes that are in any way connected to logIO, even if not directly.
+In this mode, logIO logs messages of all nodes that are in any way connected to logIO node, even if not directly.
+- **`group` mode**
+In this mode, logIO logs messages of all nodes that are in the same or in a sub group of logIO node.
 - **`flow` mode**
 In this mode, logIO logs messages of all nodes in the current flow. In this mode you don't have to wire logIO to any other node.
 - **`select` mode**

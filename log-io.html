@@ -9,6 +9,7 @@
     { v: 'wired', t: 'Wired' },
     { v: 'all', t: 'All nodes' },
     { v: 'flow', t: 'Current flow' },
+    { v: 'group', t: 'Group' },
     { v: 'select', t: 'Selected nodes' },
   ];
   const logIOScopes = [
@@ -235,6 +236,7 @@
             highlightObservedNodes(node, this.value);
             break;
           case "wired":
+          case "group":
           case "all":
           case "flow":
             $(".node-input-target-row").hide();

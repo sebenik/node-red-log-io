@@ -1,4 +1,9 @@
-const { getAllNodes, getAllWiredNodes, logLevelStatusColors } = require('./lib/utils');
+const {
+  getAllNodes,
+  getAllWiredNodes,
+  getNodesInSameGroup,
+  logLevelStatusColors,
+} = require('./lib/utils');
 const DefaultLogger = require('./lib/defaultLogger');
 
 module.exports = function (RED) {
@@ -171,6 +176,8 @@ module.exports = function (RED) {
           return new Set([node.id]);
         case 'wired':
           return getAllWiredNodes(RED, node);
+        case 'group':
+          return getNodesInSameGroup(RED, node);
         case 'flow':
           return new Set(Object.keys(node._flow.activeNodes));
         case 'select':

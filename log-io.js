@@ -155,7 +155,7 @@ module.exports = function (RED) {
 
       node.autoStart && activate();
       node.setNodeStatus();
-    };
+    }
 
     node.setNodeStatus = function() {
       const logLevel = node.logger?.config.logLevel;
@@ -220,7 +220,7 @@ module.exports = function (RED) {
 
   RED.httpAdmin.post("/logIO/:state", RED.auth.needsPermission("debug.write"), function (req, res) {
     const state = req.params.state;
-    const isSateEnable = state === 'enable';
+    const isStateEnable = state === 'enable';
     const nodes = req?.body?.nodes;
     if (!['enable', 'disable'].includes(state) || !Array.isArray(nodes)) {
       res.sendStatus(404);
@@ -229,10 +229,10 @@ module.exports = function (RED) {
     nodes.forEach(function (id) {
       const node = RED.nodes.getNode(id);
       if (!node) { return; }
-      node.active = isSateEnable;
+      node.active = isStateEnable;
       node.setNodeStatus();
     })
-    res.sendStatus(isSateEnable ? 200 : 201);
+    res.sendStatus(isStateEnable ? 200 : 201);
   });
 
   RED.httpAdmin.post("/logIO/:id/:state", RED.auth.needsPermission("debug.write"), function (req, res) {
@@ -241,10 +241,10 @@ module.exports = function (RED) {
     if (!['enable', 'disable'].includes(state) || !node) {
       return res.sendStatus(404);
     }
-    const isSateEnable = state === 'enable';
-    node.active = isSateEnable;
+    const isStateEnable = state === 'enable';
+    node.active = isStateEnable;
     node.setNodeStatus();
-    res.sendStatus(isSateEnable ? 200 : 201);
+    res.sendStatus(isStateEnable ? 200 : 201);
   });
 
   RED.httpAdmin.get("/logIO-observed-nodes/:id/:mode", function (req, res) {

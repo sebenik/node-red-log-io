@@ -9,7 +9,7 @@ logIO also has an output node, so you can use it in the middle of the flow as it
 
 ![logIO properties](https://github.com/sebenik/node-red-log-io/blob/master/docs/images/logIO-properties.png?raw=true)
 
-- **Name**: Name fo the node
+- **Name**: Name of the node
 - **Logger**: add custom logger configuration
 - **Output:** select to either log whole or part of the message
 - **Autostart**: whether or not to start logging by default. If unselected, logging will be paused and can be enabled through incoming message.
@@ -39,7 +39,7 @@ In this mode, logIO logs messages of all nodes. In this mode you don't have to w
 
 - **Name**: Name of the logger
 - **Log level**: one of `debug` `info` `warn` `error`
-- **UTC:** select if you want log timestamps in UTC instead of local time
+- **UTC:** select if you want log timestamps and file name `%DATE%` pattern in UTC instead of local time
 - **Log metadata:** select additional data to include in logs
 - **Log output:** select output for logs (debugger panel, system console, file, elastic search)
 
@@ -50,7 +50,7 @@ logIO currently supports following log outputs (multiple can be selected):
 #### File
 ![file options](https://github.com/sebenik/node-red-log-io/blob/master/docs/images/file-options.png?raw=true)
 
-- **File name**: Name of the lof file. You can add `%DATE%` placeholder, that will be replaced by date pattern specified by **File date pattern**
+- **File name**: Name of the log file. You can add `%DATE%` placeholder, that will be replaced by date pattern specified by **File date pattern**
 - **File date pattern**: A string representing the [moment.js date format](http://momentjs.com/docs/#/displaying/format/) to be used for rotating. For example, if your datePattern is simply 'HH' you will end up with 24 log files that are picked up and appended to every day. (default: 'YYYY-MM-DD')
 - **Directory**: The directory name to save log files to. If empty, logs will be saved to node-red root directory.
 - **JSON**: whether or not to format logs in JSON format
@@ -62,7 +62,7 @@ logIO currently supports following log outputs (multiple can be selected):
 ![file output](https://github.com/sebenik/node-red-log-io/blob/master/docs/images/output-file.png?raw=true)
 
 > [!WARNING]
-> Have in mind that if you delete of manually save the file that logIO is writing logs to, it might not be recreated. Watcher observing the file changes in not 100% reliable, thus avoid modifying/deleting files that are currently in use by logIO.
+> Have in mind that if you delete or manually save the file that logIO is writing logs to, it might not be recreated. Watcher observing the file changes is not 100% reliable, thus avoid modifying/deleting files that are currently in use by logIO.
 >If you delete the active log file and it's not automatically recreated, you'll have to redeploy the flow.
 
 #### Node-Red debugger panel
@@ -92,7 +92,7 @@ Default log level: `debug`
 
 If message doesn't have its own logLevel, it will be assigned one as defined in logIO and always logged. In this case logIO doesn't act as a filter, but only attaches the selected logLevel to the log entry.
 
-Of course more common case is that you want to log you messages based on severity, so if the message contains _\_logIO\__ object with key logLevel set to one of allowed levels, that one will be used for:
+Of course more common case is that you want to log your messages based on severity, so if the message contains _\_logIO\__ object with key logLevel set to one of allowed levels, that one will be used for:
 
 - displaying that log level in log entry
 - omitting the message from logs, if current message logLevel priority is lower than logIO log level priority
@@ -139,7 +139,7 @@ By default, logIO will log messages of all connected or selected nodes from depl
 
 You can disable this behavior by deselecting the **Autostart** and activate the logIO node through incoming message.
 
-To activate logging, incoming message should have a _logIO_ object with key `activate` set to `true`.
+To activate logging, incoming message should have a _\_logIO\__ object with key `activate` set to `true`.
 
 ```JSON
 {
@@ -165,7 +165,7 @@ Have in mind that those two actions are not the same and for example if you acti
 
 ### Specify fileName
 
-**Bellow applies if output is set to `File`.**
+**Below applies if output is set to `File`.**
 
 By default, logIO will log messages to file name specified in logger properties. But you can also define file name dynamically through incoming message.
 
@@ -181,7 +181,7 @@ To do so, incoming message should have a _\_logIO\__ object with key `fileName` 
 
 ### Specify dirName
 
-**Bellow applies if output is set to `File`.**
+**Below applies if output is set to `File`.**
 
 By default, logIO will log messages to directory specified in logger properties. But you can also define directory dynamically through incoming message.
 
